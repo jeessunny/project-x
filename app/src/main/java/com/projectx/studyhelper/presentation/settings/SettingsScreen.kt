@@ -333,7 +333,7 @@ fun SettingsScreen(
             updateState = uiState.updateState,
             onDismiss = onDismissUpdateDialog,
             onConfirmUpdate = onConfirmUpdateDownload,
-            onInstallNow = onTriggerInstall
+            onInstallNow = { onTriggerInstall() }
         )
     }
 }
