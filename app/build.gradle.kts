@@ -17,8 +17,8 @@ android {
         applicationId = "com.projectx.studyhelper"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,6 +51,8 @@ android {
                 keyAlias = debugKeystore.keyAlias
                 keyPassword = debugKeystore.keyPassword
             }
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 

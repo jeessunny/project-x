@@ -134,23 +134,34 @@ class AppInstaller(
      */
     fun promptInstall(apkFile: File = downloadedApkFile): Result<Unit> {
         return try {
-            if (!apkFile.exists()) {
-                return Result.failure(IllegalStateException("Target APK file does not exist at ${apkFile.absolutePath}"))
+            if (apkFile.exists()) {
+                val authority = "${context.packageName}.fileprovider"
+                val contentUri: Uri = FileProvider.getUriForFile(context, authority, apkFile)
+
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(contentUri, "application/vnd.android.package-archive")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                context.startActivity(installIntent)
+                Result.success(Unit)
+            } else {
+                openBrowserDownload()
+                Result.success(Unit)
             }
-
-            val authority = "${context.packageName}.fileprovider"
-            val contentUri: Uri = FileProvider.getUriForFile(context, authority, apkFile)
-
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(contentUri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-
-            context.startActivity(installIntent)
-            Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            openBrowserDownload()
+            Result.success(Unit)
         }
+    }
+
+    fun openBrowserDownload(url: String = "https://github.com/jeessunny/project-x/releases/latest") {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (_: Exception) {}
     }
 }

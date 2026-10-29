@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class UpdateManager(
     private val updateChecker: UpdateChecker,
     private val appInstaller: AppInstaller,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
     private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
@@ -109,11 +109,6 @@ class UpdateManager(
     }
 
     fun installDownloadedApk(context: Context): Boolean {
-        if (!appInstaller.canInstallPackages()) {
-            val intent = appInstaller.createRequestInstallPermissionIntent()
-            context.startActivity(intent)
-            return false
-        }
         val result = appInstaller.promptInstall()
         return result.isSuccess
     }
