@@ -36,6 +36,9 @@ class StudyHelperApplication : Application() {
     lateinit var appInstaller: AppInstaller
         private set
 
+    lateinit var updateManager: com.projectx.studyhelper.data.updater.UpdateManager
+        private set
+
     override fun onCreate() {
         super.onCreate()
 
@@ -51,5 +54,6 @@ class StudyHelperApplication : Application() {
         timerManager = StudyTimerManager(streakManager)
         updateChecker = UpdateChecker()
         appInstaller = AppInstaller(this)
+        updateManager = com.projectx.studyhelper.data.updater.UpdateManager(updateChecker, appInstaller)
     }
 }

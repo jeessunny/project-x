@@ -84,10 +84,7 @@ fun StudyScreen(
     onPromptAbort: () -> Unit,
     onConfirmAbort: () -> Unit,
     onDismissAbort: () -> Unit,
-    onResetCompleted: () -> Unit,
-    onDismissUpdateDialog: () -> Unit,
-    onConfirmUpdateDownload: (com.projectx.studyhelper.domain.model.UpdateInfo) -> Unit,
-    onTriggerInstall: () -> Unit
+    onResetCompleted: () -> Unit
 ) {
     val isTimerActive = uiState.timerState.status == TimerStatus.Running
 
@@ -184,16 +181,6 @@ fun StudyScreen(
             initialMinutes = uiState.selectedPreset.minutes,
             onDismiss = onCloseCustomPicker,
             onConfirm = onApplyCustomMinutes
-        )
-    }
-
-    // Automatic / Manual In-App Update Dialog
-    if (uiState.showUpdateDialog || uiState.updateState is com.projectx.studyhelper.domain.model.UpdateState.Downloading || uiState.updateState is com.projectx.studyhelper.domain.model.UpdateState.ReadyToInstall) {
-        UpdateDialog(
-            updateState = uiState.updateState,
-            onDismiss = onDismissUpdateDialog,
-            onConfirmUpdate = onConfirmUpdateDownload,
-            onInstallNow = { onTriggerInstall() }
         )
     }
 }

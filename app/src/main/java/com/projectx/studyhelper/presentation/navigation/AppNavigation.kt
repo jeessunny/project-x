@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,12 +26,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.projectx.studyhelper.data.updater.UpdateManager
+import com.projectx.studyhelper.domain.model.UpdateState
 import com.projectx.studyhelper.presentation.sessions.SessionsScreen
 import com.projectx.studyhelper.presentation.sessions.SessionsViewModel
 import com.projectx.studyhelper.presentation.settings.SettingsScreen
 import com.projectx.studyhelper.presentation.settings.SettingsViewModel
 import com.projectx.studyhelper.presentation.study.StudyScreen
 import com.projectx.studyhelper.presentation.study.TimerViewModel
+import com.projectx.studyhelper.presentation.updater.UpdateDialog
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +44,7 @@ fun AppNavigation(
     timerViewModel: TimerViewModel,
     sessionsViewModel: SessionsViewModel,
     settingsViewModel: SettingsViewModel,
+    updateManager: UpdateManager,
     timerUiState: com.projectx.studyhelper.presentation.study.StudyUiState,
     sessionsUiState: com.projectx.studyhelper.presentation.sessions.SessionsUiState,
     settingsUiState: com.projectx.studyhelper.presentation.settings.SettingsUiState
@@ -49,7 +54,7 @@ fun AppNavigation(
     val currentDestination = navBackStackEntry?.destination
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Listen for Settings snackbar notifications
+    // Listen for Settings feedback notifications
     LaunchedEffect(Unit) {
         settingsViewModel.snackbarMessage.collectLatest { message ->
             snackbarHostState.showSnackbar(message)
@@ -126,10 +131,7 @@ fun AppNavigation(
                     onPromptAbort = timerViewModel::promptAbortSession,
                     onConfirmAbort = { timerViewModel.confirmAbortSession(context) },
                     onDismissAbort = timerViewModel::dismissAbortDialog,
-                    onResetCompleted = timerViewModel::resetCompleted,
-                    onDismissUpdateDialog = timerViewModel::dismissUpdateDialog,
-                    onConfirmUpdateDownload = timerViewModel::downloadUpdate,
-                    onTriggerInstall = { timerViewModel.triggerInstall(context) }
+                    onResetCompleted = timerViewModel::resetCompleted
                 )
             }
 
@@ -144,12 +146,22 @@ fun AppNavigation(
                     onSetAmoledBlack = settingsViewModel::setAmoledBlack,
                     onSetUseDynamicColor = settingsViewModel::setUseDynamicColor,
                     onSetDefaultPreset = settingsViewModel::setDefaultPreset,
-                    onCheckForUpdates = settingsViewModel::checkForUpdatesManual,
-                    onDismissUpdateDialog = settingsViewModel::dismissUpdateDialog,
-                    onConfirmUpdateDownload = settingsViewModel::downloadUpdate,
-                    onTriggerInstall = { settingsViewModel.triggerInstall(context) }
+                    onCheckForUpdates = settingsViewModel::checkForUpdatesManual
                 )
             }
         }
+    }
+
+    // Single, stable, root-level UpdateDialog (decoupled from timer ticks to prevent any flickering)
+    val updateState by updateManager.updateState.collectAsState()
+    val showUpdateDialog by updateManager.showDialog.collectAsState()
+
+    if (showUpdateDialog || updateState is UpdateState.Downloading || updateState is UpdateState.ReadyToInstall) {
+        UpdateDialog(
+            updateState = updateState,
+            onDismiss = updateManager::dismissDialog,
+            onConfirmUpdate = { info -> updateManager.startDownload(info) },
+            onInstallNow = { updateManager.installDownloadedApk(context) }
+        )
     }
 }

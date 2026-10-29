@@ -21,9 +21,7 @@ class MainActivity : ComponentActivity() {
         val app = application as StudyHelperApplication
         TimerViewModel.Factory(
             streakManager = app.streakManager,
-            timerManager = app.timerManager,
-            updateChecker = app.updateChecker,
-            appInstaller = app.appInstaller
+            timerManager = app.timerManager
         )
     }
 
@@ -39,8 +37,7 @@ class MainActivity : ComponentActivity() {
         SettingsViewModel.Factory(
             themePreferences = app.themePreferences,
             streakRepository = app.streakRepository,
-            updateChecker = app.updateChecker,
-            appInstaller = app.appInstaller
+            updateManager = app.updateManager
         )
     }
 
@@ -49,6 +46,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val app = application as StudyHelperApplication
+
+        // Silent automatic update check on application launch
+        app.updateManager.checkForUpdates(isManual = false)
 
         setContent {
             val themeConfig by app.themePreferences.themeConfigFlow
@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     timerViewModel = timerViewModel,
                     sessionsViewModel = sessionsViewModel,
                     settingsViewModel = settingsViewModel,
+                    updateManager = app.updateManager,
                     timerUiState = timerUiState,
                     sessionsUiState = sessionsUiState,
                     settingsUiState = settingsUiState

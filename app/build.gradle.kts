@@ -17,8 +17,8 @@ android {
         applicationId = "com.projectx.studyhelper"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -38,11 +38,11 @@ android {
             val envStorePassword = System.getenv("STORE_PASSWORD")
 
             val keystoreFile = file(envKeystorePath)
-            if (keystoreFile.exists() && !envKeyAlias.isNullOrBlank()) {
+            if (keystoreFile.exists()) {
                 storeFile = keystoreFile
-                storePassword = envStorePassword
-                keyAlias = envKeyAlias
-                keyPassword = envKeyPassword
+                storePassword = envStorePassword ?: "projectx_release_pass"
+                keyAlias = envKeyAlias ?: "projectx"
+                keyPassword = envKeyPassword ?: "projectx_release_pass"
             } else {
                 // Fallback to debug keystore for development / local builds
                 val debugKeystore = signingConfigs.getByName("debug")

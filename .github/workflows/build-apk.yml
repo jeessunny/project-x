@@ -51,12 +51,17 @@ jobs:
             echo "KEY_ALIAS=$KEY_ALIAS_SECRET" >> "$GITHUB_ENV"
             echo "KEY_PASSWORD=$KEY_PASSWORD_SECRET" >> "$GITHUB_ENV"
             echo "STORE_PASSWORD=$STORE_PASSWORD_SECRET" >> "$GITHUB_ENV"
+          elif [ -f "app/keystore/release.jks" ]; then
+            echo "Using repository release.jks..."
+            echo "KEY_ALIAS=projectx" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
           else
-            echo "KEYSTORE_BASE64 secret not found. Generating a signing release keystore..."
-            keytool -genkeypair -v -keystore app/keystore/release.jks -alias releaseKey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=ProjectX, OU=Engineering, O=ProjectX, L=SanFrancisco, S=CA, C=US"
-            echo "KEY_ALIAS=releaseKey" >> "$GITHUB_ENV"
-            echo "KEY_PASSWORD=android" >> "$GITHUB_ENV"
-            echo "STORE_PASSWORD=android" >> "$GITHUB_ENV"
+            echo "Generating fallback keystore..."
+            keytool -genkeypair -v -keystore app/keystore/release.jks -alias projectx -keyalg RSA -keysize 2048 -validity 10000 -storepass projectx_release_pass -keypass projectx_release_pass -dname "CN=ProjectX, OU=Engineering, O=ProjectX, L=SanFrancisco, S=CA, C=US"
+            echo "KEY_ALIAS=projectx" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
           fi
           echo "KEYSTORE_FILE=keystore/release.jks" >> "$GITHUB_ENV"
 

@@ -1,6 +1,9 @@
 package com.projectx.studyhelper.presentation.updater
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,23 +11,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.projectx.studyhelper.domain.model.UpdateInfo
 import com.projectx.studyhelper.domain.model.UpdateState
@@ -34,192 +41,201 @@ fun UpdateDialog(
     updateState: UpdateState,
     onDismiss: () -> Unit,
     onConfirmUpdate: (UpdateInfo) -> Unit,
-    onInstallNow: (UpdateInfo) -> Unit
+    onInstallNow: () -> Unit
 ) {
-    when (updateState) {
-        is UpdateState.Available -> {
-            val updateInfo = updateState.updateInfo
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.SystemUpdate,
-                        contentDescription = "System Update",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                title = {
-                    Text(
-                        text = "Update Available (${updateInfo.versionName})",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                text = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "A new version of Project X is ready for installation.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+    if (updateState is UpdateState.Idle) return
 
-                        if (updateInfo.fileSize > 0) {
-                            val sizeMb = String.format("%.2f MB", updateInfo.fileSize / (1024f * 1024f))
-                            Text(
-                                text = "Download Size: $sizeMb",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
+    val isDownloading = updateState is UpdateState.Downloading
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "What's New:",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier.fillMaxWidth()
+    AlertDialog(
+        onDismissRequest = {
+            if (!isDownloading) onDismiss()
+        },
+        icon = {
+            val icon = when (updateState) {
+                is UpdateState.Downloading -> Icons.Default.Download
+                is UpdateState.ReadyToInstall -> Icons.Default.CheckCircle
+                is UpdateState.Error -> Icons.Default.ErrorOutline
+                else -> Icons.Default.SystemUpdate
+            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            val titleText = when (updateState) {
+                is UpdateState.Available -> "Update Available (${updateState.updateInfo.versionName})"
+                is UpdateState.Downloading -> "Downloading Update..."
+                is UpdateState.ReadyToInstall -> "Ready to Install"
+                is UpdateState.Error -> "Update Failed"
+                else -> "Project X Update"
+            }
+            Text(
+                text = titleText,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            AnimatedContent(
+                targetState = updateState,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "UpdateDialogContent"
+            ) { state ->
+                when (state) {
+                    is UpdateState.Available -> {
+                        val info = state.updateInfo
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = updateInfo.releaseNotes,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(12.dp)
+                                text = "A new version of Project X is ready to install.",
+                                style = MaterialTheme.typography.bodyMedium
                             )
-                        }
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { onConfirmUpdate(updateInfo) }
-                    ) {
-                        Icon(imageVector = Icons.Default.Download, contentDescription = null)
-                        Spacer(modifier = Modifier.padding(start = 4.dp))
-                        Text("Update Now")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text("Later")
-                    }
-                }
-            )
-        }
 
-        is UpdateState.Downloading -> {
-            AlertDialog(
-                onDismissRequest = { /* Non-cancelable during active download */ },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Download,
-                        contentDescription = "Downloading Update",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                title = {
-                    Text(
-                        text = "Downloading Update...",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (updateState.progressPercent >= 0) {
-                            LinearProgressIndicator(
-                                progress = { updateState.progressPercent / 100f },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
+                            if (info.fileSize > 0) {
+                                val sizeMb = String.format("%.2f MB", info.fileSize / (1024f * 1024f))
                                 Text(
-                                    text = "${updateState.progressPercent}%",
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                                val downloadedMb = updateState.downloadedBytes / (1024 * 1024)
-                                val totalMb = updateState.totalBytes / (1024 * 1024)
-                                Text(
-                                    text = "$downloadedMb MB / $totalMb MB",
-                                    style = MaterialTheme.typography.labelMedium
+                                    text = "Package size: $sizeMb",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.secondary
                                 )
                             }
-                        } else {
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                            )
+
                             Text(
-                                text = "Streaming package...",
-                                style = MaterialTheme.typography.labelMedium
+                                text = "Release Notes:",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = info.releaseNotes,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    is UpdateState.Downloading -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "Please wait while the release package downloads...",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            if (state.progressPercent >= 0) {
+                                LinearProgressIndicator(
+                                    progress = { (state.progressPercent / 100f).coerceIn(0f, 1f) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "${state.progressPercent}%",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    val downloadedMb = state.downloadedBytes / (1024f * 1024f)
+                                    val totalMb = state.totalBytes / (1024f * 1024f)
+                                    Text(
+                                        text = String.format("%.1f MB / %.1f MB", downloadedMb, totalMb),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            } else {
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                )
+                                Text(
+                                    text = "Connecting to server...",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    is UpdateState.ReadyToInstall -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Download completed successfully! Tap 'Install Now' to proceed with the package installer.",
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
-                },
-                confirmButton = {}
-            )
-        }
 
-        is UpdateState.ReadyToInstall -> {
-            val updateInfo = updateState.updateInfo
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.SystemUpdate,
-                        contentDescription = "Ready to Install",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                title = {
-                    Text(
-                        text = "Ready to Install",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Version ${updateInfo.versionName} has downloaded successfully. Proceed with the installation to apply updates.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                confirmButton = {
-                    Button(onClick = { onInstallNow(updateInfo) }) {
+                    is UpdateState.Error -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = state.message,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+
+                    else -> Unit
+                }
+            }
+        },
+        confirmButton = {
+            when (updateState) {
+                is UpdateState.Available -> {
+                    Button(onClick = { onConfirmUpdate(updateState.updateInfo) }) {
+                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Update Now")
+                    }
+                }
+                is UpdateState.ReadyToInstall -> {
+                    Button(onClick = onInstallNow) {
                         Text("Install Now")
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
+                }
+                is UpdateState.Error -> {
+                    Button(onClick = onDismiss) {
                         Text("Dismiss")
                     }
                 }
-            )
-        }
-
-        is UpdateState.Error -> {
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("Update Failed") },
-                text = { Text(updateState.message) },
-                confirmButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text("OK")
-                    }
+                else -> Unit
+            }
+        },
+        dismissButton = {
+            if (updateState is UpdateState.Available) {
+                TextButton(onClick = onDismiss) {
+                    Text("Later")
                 }
-            )
+            }
         }
-
-        else -> Unit
-    }
+    )
 }

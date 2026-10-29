@@ -61,10 +61,7 @@ fun SettingsScreen(
     onSetAmoledBlack: (Boolean) -> Unit,
     onSetUseDynamicColor: (Boolean) -> Unit,
     onSetDefaultPreset: (StudyPreset) -> Unit,
-    onCheckForUpdates: () -> Unit,
-    onDismissUpdateDialog: () -> Unit,
-    onConfirmUpdateDownload: (UpdateInfo) -> Unit,
-    onTriggerInstall: () -> Unit
+    onCheckForUpdates: () -> Unit
 ) {
     val context = LocalContext.current
     val systemDark = isSystemInDarkTheme()
@@ -325,16 +322,6 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-    }
-
-    // Modal Update Dialog
-    if (uiState.showUpdateDialog || uiState.updateState is UpdateState.Downloading || uiState.updateState is UpdateState.ReadyToInstall) {
-        UpdateDialog(
-            updateState = uiState.updateState,
-            onDismiss = onDismissUpdateDialog,
-            onConfirmUpdate = onConfirmUpdateDownload,
-            onInstallNow = { onTriggerInstall() }
-        )
     }
 }
 

@@ -26,7 +26,9 @@ sealed interface DownloadProgress {
 class AppInstaller(
     private val context: Context,
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
+        .followRedirects(true)
+        .followSslRedirects(true)
+        .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 ) {
@@ -41,9 +43,13 @@ class AppInstaller(
      * Downloads APK from the remote URL with live progress emissions.
      */
     fun downloadApk(downloadUrl: String): Flow<DownloadProgress> = flow {
+        // Immediate zero-progress emission so UI responds immediately
+        emit(DownloadProgress.Progress(0, 0L, 0L))
+
         val request = Request.Builder()
             .url(downloadUrl)
             .header("User-Agent", "StudyHelper-Updater")
+            .header("Accept", "application/octet-stream")
             .build()
 
         try {
@@ -54,7 +60,7 @@ class AppInstaller(
             }
 
             val body = response.body ?: run {
-                emit(DownloadProgress.Error(IOException("Response body is null")))
+                emit(DownloadProgress.Error(IOException("Response body is empty")))
                 return@flow
             }
 
@@ -66,7 +72,7 @@ class AppInstaller(
 
             body.byteStream().use { inputStream ->
                 FileOutputStream(destinationFile).use { outputStream ->
-                    val buffer = ByteArray(8 * 1024)
+                    val buffer = ByteArray(32 * 1024)
                     var bytesRead: Int
                     var totalRead = 0L
                     var lastPercent = 0
@@ -77,7 +83,7 @@ class AppInstaller(
 
                         if (totalBytes > 0) {
                             val percent = ((totalRead * 100) / totalBytes).toInt()
-                            if (percent > lastPercent) {
+                            if (percent > lastPercent || percent == 100) {
                                 lastPercent = percent
                                 emit(DownloadProgress.Progress(percent, totalRead, totalBytes))
                             }
