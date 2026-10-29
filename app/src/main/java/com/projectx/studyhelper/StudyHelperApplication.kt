@@ -18,6 +18,9 @@ class StudyHelperApplication : Application() {
     lateinit var streakPreferences: StreakPreferences
         private set
 
+    lateinit var themePreferences: com.projectx.studyhelper.presentation.theme.ThemePreferences
+        private set
+
     lateinit var streakRepository: StreakRepository
         private set
 
@@ -38,6 +41,7 @@ class StudyHelperApplication : Application() {
 
         database = StudyDatabase.getInstance(this)
         streakPreferences = StreakPreferences(this)
+        themePreferences = com.projectx.studyhelper.presentation.theme.ThemePreferences(this)
         streakRepository = StreakRepositoryImpl(
             streakDao = database.streakDao(),
             sessionDao = database.sessionDao(),

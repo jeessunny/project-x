@@ -8,8 +8,10 @@
     <!-- APK Installation permission for native in-app self-updater -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Notifications permission (Android 13+) for active timer and updater alerts -->
+    <!-- Notifications & Foreground Service for active timer and updater alerts -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".StudyHelperApplication"
@@ -30,6 +32,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Foreground service for persistent timer countdown & motivation -->
+        <service
+            android:name=".presentation.service.StudyTimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Study focus timer countdown and motivational reminders" />
+        </service>
 
         <!-- Secure FileProvider for APK Package Installer -->
         <provider

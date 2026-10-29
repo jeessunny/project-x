@@ -12,3 +12,4 @@ app/keystore/*.jks
 app/keystore/*.keystore
 *.apk
 *.aab
+*.sha256

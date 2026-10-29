@@ -14,15 +14,15 @@ import kotlinx.coroutines.launch
 sealed interface TimerStatus {
     data object Idle : TimerStatus
     data object Running : TimerStatus
-    data object Paused : TimerStatus
     data object Completed : TimerStatus
 }
 
 data class TimerState(
     val status: TimerStatus = TimerStatus.Idle,
-    val selectedPreset: StudyPreset = StudyPreset.FIFTEEN_MINUTES,
+    val selectedPreset: StudyPreset = StudyPreset.Fifteen,
     val elapsedSeconds: Long = 0L,
-    val targetSeconds: Long = StudyPreset.FIFTEEN_MINUTES.durationSeconds
+    val targetSeconds: Long = StudyPreset.Fifteen.durationSeconds,
+    val currentQuote: String = "Focus on your book, not your screen — the timer works on its own"
 ) {
     val remainingSeconds: Long
         get() = (targetSeconds - elapsedSeconds).coerceAtLeast(0L)
@@ -49,6 +49,19 @@ class StudyTimerManager(
     private val streakManager: StreakManager,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) {
+    companion object {
+        val MOTIVATIONAL_QUOTES = listOf(
+            "Focus on your book, not your screen — the timer works on its own.",
+            "Deep work requires deep stillness.",
+            "Halfway there. Maintain the rhythm.",
+            "Keep your eyes on the material. The timer runs quietly.",
+            "Small daily efforts compound into extraordinary results.",
+            "Protect your focus; it is your greatest competitive advantage.",
+            "Resist the impulse to switch tabs. Stay locked in.",
+            "Your future is built in the minutes you dedicate right now."
+        )
+    }
+
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
@@ -60,7 +73,8 @@ class StudyTimerManager(
                 it.copy(
                     selectedPreset = preset,
                     targetSeconds = preset.durationSeconds,
-                    elapsedSeconds = 0L
+                    elapsedSeconds = 0L,
+                    currentQuote = MOTIVATIONAL_QUOTES.first()
                 )
             }
         }
@@ -68,12 +82,14 @@ class StudyTimerManager(
 
     fun startTimer(preset: StudyPreset = _timerState.value.selectedPreset) {
         timerJob?.cancel()
+        val quote = MOTIVATIONAL_QUOTES.random()
         _timerState.update {
             it.copy(
                 status = TimerStatus.Running,
                 selectedPreset = preset,
                 targetSeconds = preset.durationSeconds,
-                elapsedSeconds = if (it.status == TimerStatus.Paused) it.elapsedSeconds else 0L
+                elapsedSeconds = 0L,
+                currentQuote = quote
             )
         }
 
@@ -83,54 +99,56 @@ class StudyTimerManager(
                 val currentElapsed = _timerState.value.elapsedSeconds + 1
                 val target = _timerState.value.targetSeconds
 
+                // Rotate motivational quote every 60 seconds
+                val quoteIndex = ((currentElapsed / 60) % MOTIVATIONAL_QUOTES.size).toInt()
+                val activeQuote = MOTIVATIONAL_QUOTES[quoteIndex]
+
                 if (currentElapsed >= target) {
                     _timerState.update {
                         it.copy(
                             elapsedSeconds = target,
-                            status = TimerStatus.Completed
+                            status = TimerStatus.Completed,
+                            currentQuote = "Session completed! Outstanding discipline."
                         )
                     }
-                    // Auto-record completed session
                     completeAndRecordSession()
                     break
                 } else {
-                    _timerState.update { it.copy(elapsedSeconds = currentElapsed) }
+                    _timerState.update {
+                        it.copy(
+                            elapsedSeconds = currentElapsed,
+                            currentQuote = activeQuote
+                        )
+                    }
                 }
             }
         }
     }
 
-    fun pauseTimer() {
-        if (_timerState.value.status == TimerStatus.Running) {
-            timerJob?.cancel()
-            _timerState.update { it.copy(status = TimerStatus.Paused) }
-        }
-    }
-
-    fun resumeTimer() {
-        if (_timerState.value.status == TimerStatus.Paused) {
-            startTimer(_timerState.value.selectedPreset)
-        }
-    }
-
-    fun stopTimer(savePartial: Boolean = true) {
+    /**
+     * Strict Focus Mode: Abandons current session, discards all elapsed time,
+     * and does NOT credit streak.
+     */
+    fun abortSession() {
         timerJob?.cancel()
-        val currentState = _timerState.value
-        val elapsedMinutes = (currentState.elapsedSeconds / 60).toInt()
-
-        if (savePartial && elapsedMinutes > 0) {
-            scope.launch {
-                streakManager.onSessionCompleted(
-                    elapsedMinutes = elapsedMinutes,
-                    preset = currentState.selectedPreset
-                )
-            }
-        }
-
         _timerState.update {
             it.copy(
                 status = TimerStatus.Idle,
-                elapsedSeconds = 0L
+                elapsedSeconds = 0L,
+                currentQuote = MOTIVATIONAL_QUOTES.first()
+            )
+        }
+    }
+
+    /**
+     * Resets completed timer back to idle state ready for the next session.
+     */
+    fun resetCompleted() {
+        _timerState.update {
+            it.copy(
+                status = TimerStatus.Idle,
+                elapsedSeconds = 0L,
+                currentQuote = MOTIVATIONAL_QUOTES.first()
             )
         }
     }
