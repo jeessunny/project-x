@@ -31,13 +31,17 @@ class HomeViewModel(
     private val _showUpdateDialog = MutableStateFlow(false)
 
     val uiState: StateFlow<HomeUiState> = combine(
-        streakManager.streakRecordFlow,
-        streakManager.accumulatedMinutesTodayFlow,
-        streakManager.selectedPresetFlow,
+        combine(
+            streakManager.streakRecordFlow,
+            streakManager.accumulatedMinutesTodayFlow,
+            streakManager.selectedPresetFlow
+        ) { streak, minutes, preset ->
+            Triple(streak, minutes, preset)
+        },
         timerManager.timerState,
         _updateState,
         _showUpdateDialog
-    ) { streak, minutesToday, preset, timerState, updateState, showDialog ->
+    ) { (streak, minutesToday, preset), timerState, updateState, showDialog ->
         HomeUiState(
             streakRecord = streak,
             accumulatedMinutesToday = minutesToday,
