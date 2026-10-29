@@ -73,10 +73,13 @@ jobs:
             exit 1
           fi
           echo "Found APK: $APK_PATH"
-          cp "$APK_PATH" app/build/outputs/apk/release/app-release.apk
-          sha256sum app/build/outputs/apk/release/app-release.apk > app/build/outputs/apk/release/app-release.apk.sha256
-          echo "apk_path=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_OUTPUT"
-          echo "checksum_path=app/build/outputs/apk/release/app-release.apk.sha256" >> "$GITHUB_OUTPUT"
+          TARGET_PATH="app/build/outputs/apk/release/app-release.apk"
+          if [ "$APK_PATH" != "$TARGET_PATH" ]; then
+            cp "$APK_PATH" "$TARGET_PATH"
+          fi
+          sha256sum "$TARGET_PATH" > "$TARGET_PATH.sha256"
+          echo "apk_path=$TARGET_PATH" >> "$GITHUB_OUTPUT"
+          echo "checksum_path=$TARGET_PATH.sha256" >> "$GITHUB_OUTPUT"
 
       - name: Upload Signed APK Artifact
         uses: actions/upload-artifact@v4
