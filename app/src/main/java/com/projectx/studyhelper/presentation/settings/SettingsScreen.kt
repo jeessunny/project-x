@@ -48,10 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.projectx.studyhelper.domain.model.StudyPreset
-import com.projectx.studyhelper.domain.model.UpdateInfo
-import com.projectx.studyhelper.domain.model.UpdateState
 import com.projectx.studyhelper.presentation.theme.ThemeMode
-import com.projectx.studyhelper.presentation.updater.UpdateDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

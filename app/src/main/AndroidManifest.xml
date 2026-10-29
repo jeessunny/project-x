@@ -11,7 +11,7 @@
     <!-- Notifications & Foreground Service for active timer and updater alerts -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".StudyHelperApplication"
@@ -20,7 +20,7 @@
         android:label="@string/app_name"
         android:roundIcon="@android:drawable/sym_def_app_icon"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.NoActionBar">
+        android:theme="@style/Theme.ProjectX">
 
         <activity
             android:name=".MainActivity"
@@ -37,11 +37,7 @@
         <service
             android:name=".presentation.service.StudyTimerService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Study focus timer countdown and motivational reminders" />
-        </service>
+            android:foregroundServiceType="dataSync" />
 
         <!-- Secure FileProvider for APK Package Installer -->
         <provider

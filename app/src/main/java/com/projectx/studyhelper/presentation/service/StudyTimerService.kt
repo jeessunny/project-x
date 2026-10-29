@@ -65,7 +65,18 @@ class StudyTimerService : Service() {
                 return START_NOT_STICKY
             }
             ACTION_START -> {
-                startForeground(NOTIFICATION_ID, buildNotification("Focusing...", "Keep your eyes on the book"))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(
+                        NOTIFICATION_ID,
+                        buildNotification("Focusing...", "Keep your eyes on the book"),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                    )
+                } else {
+                    startForeground(
+                        NOTIFICATION_ID,
+                        buildNotification("Focusing...", "Keep your eyes on the book")
+                    )
+                }
                 observeTimer()
             }
         }
