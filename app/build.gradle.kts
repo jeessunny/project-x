@@ -26,7 +26,7 @@ android {
         }
 
         // Custom build configuration fields for updater
-        buildConfigField("String", "GITHUB_OWNER", "\"octocat\"")
+        buildConfigField("String", "GITHUB_OWNER", "\"jeessunny\"")
         buildConfigField("String", "GITHUB_REPO", "\"project-x\"")
     }
 

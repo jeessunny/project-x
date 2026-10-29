@@ -40,23 +40,27 @@ jobs:
         id: decode_keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS_SECRET: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD_SECRET: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD_SECRET: ${{ secrets.STORE_PASSWORD }}
         run: |
+          mkdir -p app/keystore
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Decoding keystore from secrets..."
-            mkdir -p app/keystore
             echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.jks
-            echo "KEYSTORE_EXISTS=true" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=$KEY_ALIAS_SECRET" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$KEY_PASSWORD_SECRET" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=$STORE_PASSWORD_SECRET" >> "$GITHUB_ENV"
           else
-            echo "Warning: KEYSTORE_BASE64 secret not found. Build will proceed unsigned or with fallback."
-            echo "KEYSTORE_EXISTS=false" >> "$GITHUB_ENV"
+            echo "KEYSTORE_BASE64 secret not found. Generating a signing release keystore..."
+            keytool -genkeypair -v -keystore app/keystore/release.jks -alias releaseKey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=ProjectX, OU=Engineering, O=ProjectX, L=SanFrancisco, S=CA, C=US"
+            echo "KEY_ALIAS=releaseKey" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=android" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=android" >> "$GITHUB_ENV"
           fi
+          echo "KEYSTORE_FILE=keystore/release.jks" >> "$GITHUB_ENV"
 
       - name: Build Release APK
-        env:
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-          KEYSTORE_FILE: keystore/release.jks
         run: |
           ./gradlew assembleRelease --stacktrace
 
