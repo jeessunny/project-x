@@ -1,6 +1,7 @@
 package com.projectx.studyhelper
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,6 +21,11 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
+    // ViewModels use 'by viewModels' lazy delegation — factories run on first access only
     private val timerViewModel: TimerViewModel by viewModels {
         val app = application as StudyHelperApplication
         TimerViewModel.Factory(
@@ -45,23 +51,26 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // super.onCreate() MUST be called BEFORE enableEdgeToEdge().
-        // Calling enableEdgeToEdge() before super.onCreate() throws
-        // IllegalStateException on Android 14+ because the Window is not
-        // yet attached to the Activity at that point.
+        // IMPORTANT: super.onCreate() must come BEFORE enableEdgeToEdge().
+        // The Window is only attached after super.onCreate() runs; calling
+        // enableEdgeToEdge() before it throws IllegalStateException on Android 14+.
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        Log.d(TAG, "onCreate — starting")
+
         val app = application as StudyHelperApplication
 
-        // Non-blocking background update check
+        // Background update check — non-blocking, failures are swallowed silently
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 app.updateManager.checkForUpdates(isManual = false)
             } catch (e: Exception) {
-                android.util.Log.w("MainActivity", "Update check failed (non-fatal): ${e.message}")
+                Log.w(TAG, "Background update check failed (non-fatal): ${e.message}")
             }
         }
+
+        Log.d(TAG, "Calling setContent")
 
         setContent {
             val themeConfig by app.themePreferences.themeConfigFlow
@@ -86,5 +95,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+
+        Log.d(TAG, "onCreate — complete")
     }
 }

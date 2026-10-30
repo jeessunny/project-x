@@ -26,8 +26,7 @@ class StudyHelperApplication : Application() {
     }
 
     // ── Lazy dependency graph ─────────────────────────────────────────────────
-    // Nothing is constructed until first access. Application.onCreate() is empty
-    // so a failing dependency CANNOT kill the process before the UI even renders.
+    // All dependencies are lazy so Application.onCreate() is instant and safe.
 
     val database: StudyDatabase by lazy {
         Log.d(TAG, "Initializing Room database")
@@ -81,15 +80,19 @@ class StudyHelperApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         installCrashLogger()
-        Log.d(TAG, "Application.onCreate() — all dependencies are lazily initialized")
+        Log.d(TAG, "Application created — dependencies are lazily initialized")
     }
 
     /**
-     * Writes the full stack trace to a file in the app's files directory
-     * so it can be retrieved even without ADB. File: /data/data/.../files/crash_log.txt
+     * Writes the full crash stack trace to EXTERNAL storage so it can be
+     * read from Termux without root after running `termux-setup-storage`.
+     *
+     * Path: /sdcard/Android/data/com.projectx.studyhelper/files/crash_log.txt
+     * Read with: cat ~/storage/shared/Android/data/com.projectx.studyhelper/files/crash_log.txt
      */
     private fun installCrashLogger() {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
                 val sw = StringWriter()
@@ -106,12 +109,28 @@ class StudyHelperApplication : Application() {
                     appendLine("--- Stack Trace ---")
                     appendLine(stackTrace)
                     appendLine("===================")
+                    appendLine()
                 }
 
                 Log.e(TAG, logEntry)
 
-                val crashFile = File(filesDir, "crash_log.txt")
-                crashFile.appendText(logEntry)
+                // Write to EXTERNAL app-specific storage (readable via Termux after
+                // running: termux-setup-storage)
+                // Path: ~/storage/shared/Android/data/com.projectx.studyhelper/files/crash_log.txt
+                val externalDir: File? = getExternalFilesDir(null)
+                if (externalDir != null) {
+                    externalDir.mkdirs()
+                    val externalCrashFile = File(externalDir, "crash_log.txt")
+                    externalCrashFile.appendText(logEntry)
+                    Log.e(TAG, "Crash written to: ${externalCrashFile.absolutePath}")
+                }
+
+                // Also attempt internal storage as fallback
+                try {
+                    val internalCrashFile = File(filesDir, "crash_log.txt")
+                    internalCrashFile.appendText(logEntry)
+                } catch (_: Exception) {}
+
             } catch (e: Exception) {
                 Log.e(TAG, "Crash logger itself failed: ${e.message}")
             } finally {
