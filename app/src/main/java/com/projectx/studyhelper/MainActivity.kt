@@ -90,8 +90,9 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val initialTheme = app.themePreferences.getInitialThemeConfig()
             val themeConfig by app.themePreferences.themeConfigFlow
-                .collectAsStateWithLifecycle(initialValue = ThemeConfig())
+                .collectAsStateWithLifecycle(initialValue = initialTheme)
 
             StudyHelperTheme(themeConfig = themeConfig) {
                 val navController = rememberNavController()

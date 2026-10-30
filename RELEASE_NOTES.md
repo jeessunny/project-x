@@ -1,14 +1,16 @@
-Studyio v1.3.9 Release Notes
+Studyio v1.4.0 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Nordic Teal Theme Palette: Replaced the previous prebuilt theme with a calm Nordic Teal Material 3 color system (Teal #006A6A, Mint Container #70F7F7, Muted Sage).
+• First-Launch Theme Governance: Dynamic Theme (with Violet fallback) is now applied strictly on the very first launch. On all subsequent launches, Studyio immediately loads and follows the user's custom chosen theme and appearance settings with zero resets or overriding.
 
-• Dynamic Theme on Launch: Studyio now defaults to Android Dynamic Wallpaper Color (Monet) on launch. If dynamic color is not supported by the device, it automatically falls back to the refined Violet palette.
+• Instant Fast-Cache Theme Loading: Synchronized all appearance settings with the instant theme cache so the app opens directly into the user's chosen palette from frame 0 with no initial theme flicker.
 
-• System Default Theme Mode: The theme mode selector now defaults to System mode to effortlessly follow device settings.
+• Nordic Teal Theme Palette: Material 3 Nordic Teal color system (Teal #006A6A, Mint Container #70F7F7, Muted Sage).
 
-• Up-To-Date Update Dialog: Checking for updates when already on the latest release now presents a clean native information dialog showing current installed version details, perfectly styled with the update screen experience.
+• System Default Theme Mode: The theme mode selector defaults to System mode on first launch to follow device settings.
+
+• Up-To-Date Update Dialog: Checking for updates when on the latest release presents a clean native information dialog showing installed version details.
 
 • Persistent Custom Starting Preset: Custom focus countdown durations remain saved and restored across app closures.
 
