@@ -109,6 +109,11 @@ class UpdateManager(
     }
 
     fun installDownloadedApk(context: Context): Boolean {
+        if (!appInstaller.canInstallPackages()) {
+            val intent = appInstaller.createRequestInstallPermissionIntent()
+            context.startActivity(intent)
+            return false
+        }
         val result = appInstaller.promptInstall()
         return result.isSuccess
     }

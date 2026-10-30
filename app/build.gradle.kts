@@ -17,8 +17,8 @@ android {
         applicationId = "com.projectx.studyhelper"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.2.1"
+        versionCode = 6
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -53,11 +53,14 @@ android {
             }
             enableV1Signing = true
             enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = false
         }
     }
 
     buildTypes {
         release {
+            isDebuggable = false
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(

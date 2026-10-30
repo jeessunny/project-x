@@ -58,7 +58,7 @@ jobs:
             echo "STORE_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
           else
             echo "Generating fallback keystore..."
-            keytool -genkeypair -v -keystore app/keystore/release.jks -alias projectx -keyalg RSA -keysize 2048 -validity 10000 -storepass projectx_release_pass -keypass projectx_release_pass -dname "CN=ProjectX, OU=Engineering, O=ProjectX, L=SanFrancisco, S=CA, C=US"
+            keytool -genkeypair -v -keystore app/keystore/release.jks -alias projectx -keyalg RSA -keysize 2048 -validity 10000 -storepass projectx_release_pass -keypass projectx_release_pass -dname "CN=ProjectX, OU=Mobile, O=Development, C=US"
             echo "KEY_ALIAS=projectx" >> "$GITHUB_ENV"
             echo "KEY_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
             echo "STORE_PASSWORD=projectx_release_pass" >> "$GITHUB_ENV"
