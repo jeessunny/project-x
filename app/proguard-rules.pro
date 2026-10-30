@@ -1,4 +1,4 @@
-# Project X ProGuard Rules
+# Studyio ProGuard Rules
 
 # Room
 -keep class * extends androidx.room.RoomDatabase

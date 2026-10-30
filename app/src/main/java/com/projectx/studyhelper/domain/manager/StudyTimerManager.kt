@@ -98,6 +98,16 @@ class StudyTimerManager(
 
     private var timerJob: Job? = null
 
+    init {
+        scope.launch {
+            streakManager.selectedPresetFlow.collect { preset ->
+                if (_timerState.value.status == TimerStatus.Idle) {
+                    setPreset(preset)
+                }
+            }
+        }
+    }
+
     fun setPreset(preset: StudyPreset) {
         if (_timerState.value.status == TimerStatus.Idle) {
             _timerState.update {

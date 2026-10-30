@@ -111,7 +111,7 @@ class StudyHelperApplication : Application() {
 
                 val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 val logEntry = buildString {
-                    appendLine("=== PROJECT X CRASH REPORT ===")
+                    appendLine("=== STUDYIO CRASH REPORT ===")
                     appendLine("Timestamp : $timestamp")
                     appendLine("Device    : ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})")
                     appendLine("Thread    : ${thread.name}")

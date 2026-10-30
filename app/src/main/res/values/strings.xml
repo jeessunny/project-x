@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Project X</string>
+    <string name="app_name">Studyio</string>
     <string name="timer_service_notification_channel">Study Timer</string>
     <string name="timer_service_notification_desc">Tracks your active study session</string>
 </resources>

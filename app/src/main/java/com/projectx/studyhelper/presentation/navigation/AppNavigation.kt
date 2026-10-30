@@ -62,10 +62,10 @@ fun AppNavigation(
     }
 
     val currentScreenTitle = when (currentDestination?.route) {
-        Screen.Study.route -> "Project X"
+        Screen.Study.route -> "Studyio"
         Screen.Sessions.route -> "Study Sessions"
         Screen.Settings.route -> "Settings"
-        else -> "Project X"
+        else -> "Studyio"
     }
 
     Scaffold(

@@ -17,10 +17,10 @@
         android:name=".StudyHelperApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ProjectX">
+        android:theme="@style/Theme.Studyio">
 
         <activity
             android:name=".MainActivity"
@@ -38,7 +38,7 @@
             android:name=".CrashReportActivity"
             android:exported="false"
             android:process=":crash"
-            android:theme="@style/Theme.ProjectX" />
+            android:theme="@style/Theme.Studyio" />
 
         <!-- Foreground service for persistent timer countdown & motivation -->
         <service

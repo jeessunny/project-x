@@ -3,6 +3,7 @@ package com.projectx.studyhelper.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -21,6 +22,7 @@ class StreakPreferences(private val context: Context) {
 
     private object PreferencesKeys {
         val SELECTED_PRESET_MINUTES = intPreferencesKey("selected_preset_minutes")
+        val IS_CUSTOM_PRESET = booleanPreferencesKey("is_custom_preset")
         val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
         val STARTED_SESSIONS_COUNT = intPreferencesKey("started_sessions_count")
         val STOPPED_SESSIONS_COUNT = intPreferencesKey("stopped_sessions_count")
@@ -41,7 +43,12 @@ class StreakPreferences(private val context: Context) {
         }
         .map { preferences ->
             val minutes = preferences[PreferencesKeys.SELECTED_PRESET_MINUTES] ?: StudyPreset.FIFTEEN_MINUTES.minutes
-            StudyPreset.fromMinutes(minutes)
+            val isCustom = preferences[PreferencesKeys.IS_CUSTOM_PRESET] ?: false
+            if (isCustom) {
+                StudyPreset.Custom(minutes)
+            } else {
+                StudyPreset.fromMinutes(minutes)
+            }
         }
 
     val dailyGoalMinutesFlow: Flow<Int> = context.dataStore.data
@@ -95,6 +102,7 @@ class StreakPreferences(private val context: Context) {
     suspend fun saveSelectedPreset(preset: StudyPreset) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SELECTED_PRESET_MINUTES] = preset.minutes
+            preferences[PreferencesKeys.IS_CUSTOM_PRESET] = (preset is StudyPreset.Custom)
         }
     }
 

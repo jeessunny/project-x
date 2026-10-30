@@ -46,7 +46,7 @@ class CrashReportActivity : Activity() {
 
         // Header Title
         val titleView = TextView(this).apply {
-            text = "Project X — Diagnostic Report"
+            text = "Studyio — Diagnostic Report"
             setTextColor(Color.parseColor("#FF6F00"))
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
@@ -97,7 +97,7 @@ class CrashReportActivity : Activity() {
             setTextColor(Color.WHITE)
             setOnClickListener {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("Project X Crash Log", crashInfo)
+                val clip = ClipData.newPlainText("Studyio Crash Log", crashInfo)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this@CrashReportActivity, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
             }
@@ -110,7 +110,7 @@ class CrashReportActivity : Activity() {
         buttonBar.addView(spacer)
 
         val restartButton = Button(this).apply {
-            text = "Restart App"
+            text = "Restart Studyio"
             setBackgroundColor(Color.parseColor("#37474F"))
             setTextColor(Color.WHITE)
             setOnClickListener {

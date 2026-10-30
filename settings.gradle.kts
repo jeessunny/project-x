@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ProjectX"
+rootProject.name = "Studyio"
 include(":app")

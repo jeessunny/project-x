@@ -73,7 +73,7 @@ fun UpdateDialog(
                 is UpdateState.Downloading -> "Downloading Update"
                 is UpdateState.ReadyToInstall -> "Download Complete"
                 is UpdateState.Error -> "Update Failed"
-                else -> "Project X Update"
+                else -> "Studyio Update"
             }
             Text(
                 text = titleText,
@@ -97,7 +97,7 @@ fun UpdateDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "A new version of Project X is available with new features and improvements.",
+                                text = "A new version of Studyio is available with new features and improvements.",
                                 style = MaterialTheme.typography.bodyMedium
                             )
 

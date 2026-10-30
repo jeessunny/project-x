@@ -1,15 +1,15 @@
-Project X v1.3.6 Release Notes
+Studyio v1.3.7 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Minimal Material Single Glow: Completely stripped away redundant glow layers, extra beacon flares, and concentric halos. The Glow animation now features a single soft breathing aura cleanly framing the progress stroke, matching pure Material 3 minimalism.
+• Brand Identity — Studyio: Officially renamed the application to Studyio across the entire app, navigation bars, system launcher label, self-updater, and diagnostic crash screens.
 
-• Zero Toast While Checking Updates: Completely removed all toast notifications when checking for updates. The settings screen remains quiet and distraction-free with only the inline progress indicator.
+• Official App Icon: Installed the brand-new Studyio adaptive launcher icon from the brand package across all screen density buckets (mdpi through xxxhdpi) with custom adaptive vector foreground and background styling.
 
-• Material Segmented Indicator: The first element at 12 o'clock always blinks first at session start and during idle readiness.
+• Persistent Custom Starting Preset: Resolved the bug where custom focus countdown durations would reset back to 15m upon app closure. Custom starting presets are now fully persisted in DataStore and automatically restored to the focus timer on every app launch.
 
-• Perfectly Aligned Abandon Dialog: Full-width, balanced layout for Keep Focusing and Abandon Session buttons.
+• Minimal Material Single Glow: Subtle single breathing glow aura framing the focus progress arc.
 
-• Pure Wiggly Wave: Dynamic fluid wave without background circular obstruction.
+• Zero Toast While Checking Updates: Distraction-free update checking with inline progress indicator.
 
 • Retained Stability: Offline crash diagnostics screen remains active on an isolated process.

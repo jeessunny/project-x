@@ -1,4 +1,4 @@
-# Project X — Study Helper App (Phase 1)
+# Studyio — Focus & Study Companion
 
 Production-grade Android application built with Kotlin 2.0+, Jetpack Compose, Material 3 / Material You dynamic theming, and Clean Architecture (`data`, `domain`, `presentation`).
 
