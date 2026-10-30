@@ -17,8 +17,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.InstallMobile
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -53,8 +55,8 @@ fun UpdateDialog(
         },
         icon = {
             val icon = when (updateState) {
-                is UpdateState.Downloading -> Icons.Default.Download
-                is UpdateState.ReadyToInstall -> Icons.Default.CheckCircle
+                is UpdateState.Downloading -> Icons.Default.CloudDownload
+                is UpdateState.ReadyToInstall -> Icons.Default.InstallMobile
                 is UpdateState.Error -> Icons.Default.ErrorOutline
                 else -> Icons.Default.SystemUpdate
             }
@@ -68,8 +70,8 @@ fun UpdateDialog(
         title = {
             val titleText = when (updateState) {
                 is UpdateState.Available -> "Update Available (${updateState.updateInfo.versionName})"
-                is UpdateState.Downloading -> "Downloading Update..."
-                is UpdateState.ReadyToInstall -> "Ready to Install"
+                is UpdateState.Downloading -> "Downloading Update"
+                is UpdateState.ReadyToInstall -> "Download Complete"
                 is UpdateState.Error -> "Update Failed"
                 else -> "Project X Update"
             }
@@ -95,7 +97,7 @@ fun UpdateDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "A new version of Project X is ready to install.",
+                                text = "A new version of Project X is available with new features and improvements.",
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
@@ -109,14 +111,14 @@ fun UpdateDialog(
                             }
 
                             Text(
-                                text = "Release Notes:",
+                                text = "What's New:",
                                 style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
 
                             Surface(
                                 shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
@@ -133,14 +135,14 @@ fun UpdateDialog(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = "Please wait while the release package downloads...",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            if (state.progressPercent >= 0 && state.downloadedBytes > 0) {
+                                Text(
+                                    text = "Downloading update package...",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
 
-                            if (state.progressPercent >= 0) {
                                 LinearProgressIndicator(
                                     progress = { (state.progressPercent / 100f).coerceIn(0f, 1f) },
                                     modifier = Modifier
@@ -165,13 +167,20 @@ fun UpdateDialog(
                                     )
                                 }
                             } else {
+                                Text(
+                                    text = "Gathering package details & connecting to server...",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
                                 LinearProgressIndicator(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(8.dp)
                                 )
                                 Text(
-                                    text = "Connecting to server...",
+                                    text = "Preparing secure download stream...",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -182,10 +191,24 @@ fun UpdateDialog(
                     is UpdateState.ReadyToInstall -> {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Package verified and ready",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = "Download completed successfully! Tap 'Install Now' to proceed with the package installer.",
+                                text = "The update package has downloaded successfully. Tap 'Install Now' to launch the Android package installer.",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -219,6 +242,8 @@ fun UpdateDialog(
                 }
                 is UpdateState.ReadyToInstall -> {
                     Button(onClick = onInstallNow) {
+                        Icon(Icons.Default.InstallMobile, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text("Install Now")
                     }
                 }

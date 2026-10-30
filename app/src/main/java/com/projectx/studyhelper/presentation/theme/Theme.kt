@@ -82,18 +82,14 @@ fun StudyHelperTheme(
         ThemeMode.DARK -> true
     }
 
-    // Transsion (Tecno/Infinix/itel) OEM ROMs often crash inside dynamic color extraction
-    val isTranssionOem = Build.MANUFACTURER.contains("TECNO", ignoreCase = true) ||
-            Build.MANUFACTURER.contains("Infinix", ignoreCase = true) ||
-            Build.MANUFACTURER.contains("itel", ignoreCase = true) ||
-            Build.MANUFACTURER.contains("Transsion", ignoreCase = true)
-
+    // Dynamic Material You (Monet) theme extraction on Android 12+ (API 31+)
+    // Safely wrapped in try-catch to ensure graceful fallback if device wallpaper colors cannot be resolved
     val baseColorScheme: ColorScheme = when {
-        themeConfig.useDynamicColor && !isTranssionOem && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        themeConfig.useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             try {
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             } catch (e: Throwable) {
-                Log.w("StudyHelperTheme", "Dynamic color extraction failed, falling back to static palette", e)
+                Log.w("StudyHelperTheme", "Dynamic color extraction fallback to static palette: ${e.message}")
                 if (isDark) PurpleDarkColorScheme else PurpleLightColorScheme
             }
         }

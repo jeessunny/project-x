@@ -21,15 +21,20 @@ data class StudyUiState(
     val streakRecord: StreakRecord = StreakRecord(),
     val accumulatedMinutesToday: Int = 0,
     val selectedPreset: StudyPreset = StudyPreset.Fifteen,
+    val dailyGoalMinutes: Int = 45,
     val timerState: TimerState = TimerState(),
     val isCustomPickerOpen: Boolean = false,
     val isAbortDialogOpen: Boolean = false
 ) {
     val dailyProgress: Float
-        get() = (accumulatedMinutesToday.toFloat() / selectedPreset.minutes).coerceIn(0f, 1f)
+        get() = if (dailyGoalMinutes > 0) {
+            (accumulatedMinutesToday.toFloat() / dailyGoalMinutes).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
 
     val isDailyGoalReached: Boolean
-        get() = accumulatedMinutesToday >= selectedPreset.minutes
+        get() = accumulatedMinutesToday >= dailyGoalMinutes
 }
 
 class TimerViewModel(
@@ -44,9 +49,10 @@ class TimerViewModel(
         combine(
             streakManager.streakRecordFlow,
             streakManager.accumulatedMinutesTodayFlow,
-            streakManager.selectedPresetFlow
-        ) { streak, minutes, preset ->
-            Triple(streak, minutes, preset)
+            streakManager.selectedPresetFlow,
+            streakManager.dailyGoalMinutesFlow
+        ) { streak, minutes, preset, goal ->
+            Quadruple(streak, minutes, preset, goal)
         },
         combine(
             timerManager.timerState,
@@ -55,11 +61,12 @@ class TimerViewModel(
         ) { timerState, customPicker, abortDialog ->
             Triple(timerState, customPicker, abortDialog)
         }
-    ) { (streak, minutesToday, preset), (timerState, customPicker, abortDialog) ->
+    ) { (streak, minutesToday, preset, goal), (timerState, customPicker, abortDialog) ->
         StudyUiState(
             streakRecord = streak,
             accumulatedMinutesToday = minutesToday,
             selectedPreset = preset,
+            dailyGoalMinutes = goal,
             timerState = timerState,
             isCustomPickerOpen = customPicker,
             isAbortDialogOpen = abortDialog
@@ -119,6 +126,8 @@ class TimerViewModel(
     fun resetCompleted() {
         timerManager.resetCompleted()
     }
+
+    private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
     class Factory(
         private val streakManager: StreakManager,

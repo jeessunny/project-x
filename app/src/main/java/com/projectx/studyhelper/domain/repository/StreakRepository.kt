@@ -10,10 +10,16 @@ interface StreakRepository {
     fun getStreakRecordFlow(): Flow<StreakRecord>
     suspend fun getStreakRecord(): StreakRecord
     suspend fun updateStreakRecord(streakRecord: StreakRecord)
+
     suspend fun recordStudySession(session: StudySession): Long
     fun getAccumulatedMinutesTodayFlow(): Flow<Int>
     suspend fun getAccumulatedMinutesForDate(date: LocalDate): Int
+
     fun getSelectedPresetFlow(): Flow<StudyPreset>
     suspend fun setSelectedPreset(preset: StudyPreset)
+
+    fun getDailyGoalMinutesFlow(): Flow<Int>
+    suspend fun setDailyGoalMinutes(minutes: Int)
+
     fun getRecentSessionsFlow(): Flow<List<StudySession>>
 }

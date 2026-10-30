@@ -19,6 +19,11 @@ class StreakPreferences(private val context: Context) {
 
     private object PreferencesKeys {
         val SELECTED_PRESET_MINUTES = intPreferencesKey("selected_preset_minutes")
+        val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
+    }
+
+    companion object {
+        const val DEFAULT_DAILY_GOAL_MINUTES = 45
     }
 
     val selectedPresetFlow: Flow<StudyPreset> = context.dataStore.data
@@ -34,9 +39,27 @@ class StreakPreferences(private val context: Context) {
             StudyPreset.fromMinutes(minutes)
         }
 
+    val dailyGoalMinutesFlow: Flow<Int> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.DAILY_GOAL_MINUTES] ?: DEFAULT_DAILY_GOAL_MINUTES
+        }
+
     suspend fun saveSelectedPreset(preset: StudyPreset) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SELECTED_PRESET_MINUTES] = preset.minutes
+        }
+    }
+
+    suspend fun saveDailyGoalMinutes(minutes: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DAILY_GOAL_MINUTES] = minutes.coerceIn(10, 360)
         }
     }
 }

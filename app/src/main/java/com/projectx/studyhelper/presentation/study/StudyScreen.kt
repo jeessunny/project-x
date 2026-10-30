@@ -29,9 +29,11 @@ import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -42,7 +44,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -102,7 +103,7 @@ fun StudyScreen(
             isCompletedToday = uiState.streakRecord.isStreakActiveToday
         )
 
-        // Expanded Presets with 20-20-20 eye rest rule
+        // Presets: 15m, 20m, 45m & Custom
         StudyPresetChipsSection(
             selectedPreset = uiState.selectedPreset,
             onSelectPreset = onSelectPreset,
@@ -118,10 +119,10 @@ fun StudyScreen(
             onResetCompleted = onResetCompleted
         )
 
-        // Daily Target Progress Section
+        // Daily Target Progress Section (Configurable Goal: Default 45m)
         DailyProgressCard(
             accumulatedMinutesToday = uiState.accumulatedMinutesToday,
-            targetMinutes = uiState.selectedPreset.minutes,
+            dailyGoalMinutes = uiState.dailyGoalMinutes,
             progress = uiState.dailyProgress,
             isGoalReached = uiState.isDailyGoalReached
         )
@@ -207,6 +208,7 @@ fun StudyPresetChipsSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Strictly 15m, 20m, 45m presets
             StudyPreset.standardPresets.forEach { preset ->
                 FilterChip(
                     selected = selectedPreset.minutes == preset.minutes && selectedPreset !is StudyPreset.Custom,
@@ -235,7 +237,48 @@ fun StudyPresetChipsSection(
             )
         }
 
-        // Contextual 20-20-20 Health Rule Helper Pill
+        // Long Session Fatigue Reminder (for 45m and longer custom sessions)
+        AnimatedVisibility(
+            visible = selectedPreset.isLongSession,
+            enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically()
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SelfImprovement,
+                        contentDescription = "Fatigue reminder",
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Pacing Advice: Extended Block",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Long continuous study blocks can diminish knowledge retention. Consider shorter intervals (15m–20m) and rest yourself between sessions for maximum focus.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        // Contextual 20-20-20 Health Rule Helper Pill (for 20m)
         AnimatedVisibility(
             visible = selectedPreset.isTwentyMinuteRule,
             enter = fadeIn() + slideInVertically(),
@@ -327,23 +370,30 @@ fun StrictTimerDisplayCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Dynamic Motivational Prompt (Smooth Animated Quote)
-            AnimatedContent(
-                targetState = timerState.currentQuote,
-                transitionSpec = {
-                    (fadeIn() + slideInVertically { it / 2 }) togetherWith (fadeOut() + slideOutVertically { -it / 2 })
-                },
-                label = "MotivationalQuote"
-            ) { quoteText ->
-                Text(
-                    text = "“$quoteText”",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+            // Motivational quote appears ONLY when timer is running
+            AnimatedVisibility(
+                visible = timerState.status == TimerStatus.Running && timerState.currentQuote.isNotBlank(),
+                enter = fadeIn() + slideInVertically { it / 2 },
+                exit = fadeOut() + slideOutVertically { -it / 2 }
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.height(18.dp))
+                    AnimatedContent(
+                        targetState = timerState.currentQuote,
+                        transitionSpec = {
+                            (fadeIn() + slideInVertically { it / 2 }) togetherWith (fadeOut() + slideOutVertically { -it / 2 })
+                        },
+                        label = "MotivationalQuote"
+                    ) { quoteText ->
+                        Text(
+                            text = "“$quoteText”",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -433,7 +483,7 @@ fun CustomDurationDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("5 min", style = MaterialTheme.typography.labelSmall)
-                    Text("60 min", style = MaterialTheme.typography.labelSmall)
+                    Text("45 min", style = MaterialTheme.typography.labelSmall)
                     Text("120 min", style = MaterialTheme.typography.labelSmall)
                 }
             }
@@ -552,13 +602,13 @@ fun StreakSummaryCard(
 @Composable
 fun DailyProgressCard(
     accumulatedMinutesToday: Int,
-    targetMinutes: Int,
+    dailyGoalMinutes: Int,
     progress: Float,
     isGoalReached: Boolean
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         shape = MaterialTheme.shapes.large,
         modifier = Modifier.fillMaxWidth()
@@ -574,7 +624,7 @@ fun DailyProgressCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Daily Progress",
+                    text = "Daily Progress Limit",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -615,7 +665,7 @@ fun DailyProgressCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "$accumulatedMinutesToday / $targetMinutes minutes completed",
+                    text = "$accumulatedMinutesToday / $dailyGoalMinutes min completed",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

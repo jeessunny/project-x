@@ -59,6 +59,14 @@ class StreakRepositoryImpl(
         streakPreferences.saveSelectedPreset(preset)
     }
 
+    override fun getDailyGoalMinutesFlow(): Flow<Int> {
+        return streakPreferences.dailyGoalMinutesFlow
+    }
+
+    override suspend fun setDailyGoalMinutes(minutes: Int) {
+        streakPreferences.saveDailyGoalMinutes(minutes)
+    }
+
     override fun getRecentSessionsFlow(): Flow<List<StudySession>> {
         return sessionDao.getAllRecentSessions().map { list ->
             list.map { entity ->

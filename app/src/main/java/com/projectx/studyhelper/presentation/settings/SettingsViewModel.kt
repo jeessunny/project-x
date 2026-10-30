@@ -8,7 +8,6 @@ import com.projectx.studyhelper.BuildConfig
 import com.projectx.studyhelper.data.updater.UpdateManager
 import com.projectx.studyhelper.domain.model.StudyPreset
 import com.projectx.studyhelper.domain.model.UpdateInfo
-import com.projectx.studyhelper.domain.model.UpdateState
 import com.projectx.studyhelper.domain.repository.StreakRepository
 import com.projectx.studyhelper.presentation.theme.ThemeConfig
 import com.projectx.studyhelper.presentation.theme.ThemeMode
@@ -23,6 +22,7 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val themeConfig: ThemeConfig = ThemeConfig(),
     val defaultPreset: StudyPreset = StudyPreset.Fifteen,
+    val dailyGoalMinutes: Int = 45,
     val isCheckingForUpdate: Boolean = false,
     val appVersion: String = BuildConfig.VERSION_NAME
 )
@@ -38,11 +38,13 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = combine(
         themePreferences.themeConfigFlow,
         streakRepository.getSelectedPresetFlow(),
+        streakRepository.getDailyGoalMinutesFlow(),
         updateManager.isChecking
-    ) { themeConfig, defaultPreset, isChecking ->
+    ) { themeConfig, defaultPreset, dailyGoal, isChecking ->
         SettingsUiState(
             themeConfig = themeConfig,
             defaultPreset = defaultPreset,
+            dailyGoalMinutes = dailyGoal,
             isCheckingForUpdate = isChecking
         )
     }.stateIn(
@@ -72,6 +74,12 @@ class SettingsViewModel(
     fun setDefaultPreset(preset: StudyPreset) {
         viewModelScope.launch {
             streakRepository.setSelectedPreset(preset)
+        }
+    }
+
+    fun setDailyGoalMinutes(minutes: Int) {
+        viewModelScope.launch {
+            streakRepository.setDailyGoalMinutes(minutes)
         }
     }
 

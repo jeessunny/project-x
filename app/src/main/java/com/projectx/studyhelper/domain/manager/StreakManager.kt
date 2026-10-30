@@ -5,6 +5,7 @@ import com.projectx.studyhelper.domain.model.StudyPreset
 import com.projectx.studyhelper.domain.model.StudySession
 import com.projectx.studyhelper.domain.repository.StreakRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -15,6 +16,7 @@ class StreakManager(
     val streakRecordFlow: Flow<StreakRecord> = streakRepository.getStreakRecordFlow()
     val accumulatedMinutesTodayFlow: Flow<Int> = streakRepository.getAccumulatedMinutesTodayFlow()
     val selectedPresetFlow: Flow<StudyPreset> = streakRepository.getSelectedPresetFlow()
+    val dailyGoalMinutesFlow: Flow<Int> = streakRepository.getDailyGoalMinutesFlow()
 
     /**
      * Evaluates streak continuity on app launch or date rollover.
@@ -55,7 +57,7 @@ class StreakManager(
 
     /**
      * Processes a newly completed study session, stores it, and increments the streak
-     * if the daily accumulated study minutes cross the active preset threshold.
+     * if the daily accumulated study minutes cross the configurable daily goal threshold.
      */
     suspend fun onSessionCompleted(
         elapsedMinutes: Int,
@@ -70,9 +72,12 @@ class StreakManager(
         streakRepository.recordStudySession(session)
 
         val totalMinutesToday = streakRepository.getAccumulatedMinutesForDate(sessionDate)
+        val dailyGoal = streakRepository.getDailyGoalMinutesFlow().first()
+        // Threshold: daily goal (default 45 min) or the completed preset duration
+        val threshold = minOf(dailyGoal, preset.minutes)
         var record = streakRepository.getStreakRecord()
 
-        if (totalMinutesToday >= preset.minutes) {
+        if (totalMinutesToday >= threshold) {
             val lastDate = record.lastCompletedDate
 
             if (lastDate == sessionDate) {
@@ -113,5 +118,9 @@ class StreakManager(
 
     suspend fun setPreset(preset: StudyPreset) {
         streakRepository.setSelectedPreset(preset)
+    }
+
+    suspend fun setDailyGoalMinutes(minutes: Int) {
+        streakRepository.setDailyGoalMinutes(minutes)
     }
 }

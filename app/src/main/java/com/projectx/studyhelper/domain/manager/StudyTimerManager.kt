@@ -22,7 +22,7 @@ data class TimerState(
     val selectedPreset: StudyPreset = StudyPreset.Fifteen,
     val elapsedSeconds: Long = 0L,
     val targetSeconds: Long = StudyPreset.Fifteen.durationSeconds,
-    val currentQuote: String = "Focus on your book, not your screen — the timer works on its own"
+    val currentQuote: String = ""
 ) {
     val remainingSeconds: Long
         get() = (targetSeconds - elapsedSeconds).coerceAtLeast(0L)
@@ -58,7 +58,38 @@ class StudyTimerManager(
             "Small daily efforts compound into extraordinary results.",
             "Protect your focus; it is your greatest competitive advantage.",
             "Resist the impulse to switch tabs. Stay locked in.",
-            "Your future is built in the minutes you dedicate right now."
+            "Your future is built in the minutes you dedicate right now.",
+            "Discipline is choosing between what you want now and what you want most.",
+            "Action cures anxiety. Dive deeper into the problem.",
+            "The mind expands through focused struggle, not comfortable ease.",
+            "Mastery is the product of silent, unbroken repetitions.",
+            "Do not count the minutes; make the minutes count.",
+            "Silence the noise. Amplify your depth.",
+            "Consistency transforms ordinary students into masters.",
+            "One topic, one page, one concept at a time.",
+            "Great minds are forged in moments of solitary concentration.",
+            "Every minute you spend learning is an investment with infinite return.",
+            "Train your attention like a muscle. Hold the line.",
+            "Distraction is the thief of potential. Stay present.",
+            "You don't need motivation; you need relentless discipline.",
+            "When the session is hard, progress is happening fastest.",
+            "Clarity follows engagement. Keep reading.",
+            "The summit is reached step by step, not in a single leap.",
+            "Turn off outside validation. Focus on internal mastery.",
+            "Your future self will thank you for not giving up today.",
+            "Immersion breeds comprehension.",
+            "A disciplined session is a victory no one can take from you.",
+            "Be patient with difficult concepts. Breakthroughs take time.",
+            "High focus beats high hours every single time.",
+            "Stay humble, stay quiet, keep studying.",
+            "The difference between good and great is five more minutes of focus.",
+            "Effort today is freedom tomorrow.",
+            "Build knowledge that cannot be taken away.",
+            "Eliminate all distractions. Your goals deserve undivided attention.",
+            "Confidence is born from preparation, not hope.",
+            "Breathe, reset your posture, and dive right back in.",
+            "Every expert was once a beginner who refused to quit.",
+            "Sustain the tempo. You are doing important work right now."
         )
     }
 
@@ -74,7 +105,7 @@ class StudyTimerManager(
                     selectedPreset = preset,
                     targetSeconds = preset.durationSeconds,
                     elapsedSeconds = 0L,
-                    currentQuote = MOTIVATIONAL_QUOTES.first()
+                    currentQuote = ""
                 )
             }
         }
@@ -82,14 +113,14 @@ class StudyTimerManager(
 
     fun startTimer(preset: StudyPreset = _timerState.value.selectedPreset) {
         timerJob?.cancel()
-        val quote = MOTIVATIONAL_QUOTES.random()
+        val initialQuote = MOTIVATIONAL_QUOTES.random()
         _timerState.update {
             it.copy(
                 status = TimerStatus.Running,
                 selectedPreset = preset,
                 targetSeconds = preset.durationSeconds,
                 elapsedSeconds = 0L,
-                currentQuote = quote
+                currentQuote = initialQuote
             )
         }
 
@@ -99,9 +130,12 @@ class StudyTimerManager(
                 val currentElapsed = _timerState.value.elapsedSeconds + 1
                 val target = _timerState.value.targetSeconds
 
-                // Rotate motivational quote every 60 seconds
-                val quoteIndex = ((currentElapsed / 60) % MOTIVATIONAL_QUOTES.size).toInt()
-                val activeQuote = MOTIVATIONAL_QUOTES[quoteIndex]
+                // Rotate to a random motivational quote every 30 seconds
+                val activeQuote = if (currentElapsed > 0 && currentElapsed % 30 == 0L) {
+                    MOTIVATIONAL_QUOTES.random()
+                } else {
+                    _timerState.value.currentQuote
+                }
 
                 if (currentElapsed >= target) {
                     _timerState.update {
@@ -135,7 +169,7 @@ class StudyTimerManager(
             it.copy(
                 status = TimerStatus.Idle,
                 elapsedSeconds = 0L,
-                currentQuote = MOTIVATIONAL_QUOTES.first()
+                currentQuote = ""
             )
         }
     }
@@ -148,7 +182,7 @@ class StudyTimerManager(
             it.copy(
                 status = TimerStatus.Idle,
                 elapsedSeconds = 0L,
-                currentQuote = MOTIVATIONAL_QUOTES.first()
+                currentQuote = ""
             )
         }
     }

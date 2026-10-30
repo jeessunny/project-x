@@ -146,6 +146,7 @@ fun AppNavigation(
                     onSetAmoledBlack = settingsViewModel::setAmoledBlack,
                     onSetUseDynamicColor = settingsViewModel::setUseDynamicColor,
                     onSetDefaultPreset = settingsViewModel::setDefaultPreset,
+                    onSetDailyGoalMinutes = settingsViewModel::setDailyGoalMinutes,
                     onCheckForUpdates = settingsViewModel::checkForUpdatesManual
                 )
             }

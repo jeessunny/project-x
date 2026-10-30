@@ -34,7 +34,7 @@ class UpdateManager(
     private var downloadJob: Job? = null
 
     /**
-     * Checks GitHub API for newer releases.
+     * Checks GitHub API for newer releases with immediate visual feedback.
      * @param isManual True if initiated by the user via Settings button.
      */
     fun checkForUpdates(isManual: Boolean = false) {
@@ -42,6 +42,10 @@ class UpdateManager(
 
         scope.launch {
             _isChecking.value = true
+            if (isManual) {
+                _userFeedbackMessage.emit("Gathering release info & checking for updates...")
+            }
+
             val result = updateChecker.checkForUpdate()
             _isChecking.value = false
 
@@ -49,10 +53,13 @@ class UpdateManager(
                 if (info != null && info.isUpdateAvailable) {
                     _updateState.value = UpdateState.Available(info)
                     _showDialog.value = true
+                    if (isManual) {
+                        _userFeedbackMessage.emit("New update found: ${info.versionName}")
+                    }
                 } else {
                     _updateState.value = UpdateState.Idle
                     if (isManual) {
-                        _userFeedbackMessage.emit("You are using the latest version of Project X.")
+                        _userFeedbackMessage.emit("You are running the latest version of Project X.")
                     }
                 }
             }.onFailure { error ->
@@ -73,17 +80,22 @@ class UpdateManager(
     }
 
     /**
-     * Initiates download with immediate responsive UI feedback.
+     * Initiates download with instant feedback notification and zero-delay UI transition.
      */
     fun startDownload(updateInfo: UpdateInfo) {
         downloadJob?.cancel()
-        // Immediately switch state to downloading so there is ZERO UI lag
+
+        // Immediate responsive UI state: indeterminate connecting/gathering phase
         _updateState.value = UpdateState.Downloading(
-            progressPercent = 0,
+            progressPercent = -1,
             downloadedBytes = 0L,
             totalBytes = updateInfo.fileSize
         )
         _showDialog.value = true
+
+        scope.launch {
+            _userFeedbackMessage.emit("Gathering update package & connecting to server...")
+        }
 
         downloadJob = scope.launch {
             appInstaller.downloadApk(updateInfo.downloadUrl).collect { progress ->
@@ -97,11 +109,13 @@ class UpdateManager(
                     }
                     is DownloadProgress.Completed -> {
                         _updateState.value = UpdateState.ReadyToInstall(updateInfo)
+                        _userFeedbackMessage.emit("Download complete! Ready to install.")
                     }
                     is DownloadProgress.Error -> {
                         _updateState.value = UpdateState.Error(
                             progress.throwable.localizedMessage ?: "Download failed. Please check your network connection."
                         )
+                        _userFeedbackMessage.emit("Download failed: ${progress.throwable.localizedMessage}")
                     }
                 }
             }
@@ -109,6 +123,10 @@ class UpdateManager(
     }
 
     fun installDownloadedApk(context: Context): Boolean {
+        scope.launch {
+            _userFeedbackMessage.emit("Preparing Android Package Installer...")
+        }
+
         if (!appInstaller.canInstallPackages()) {
             val intent = appInstaller.createRequestInstallPermissionIntent()
             context.startActivity(intent)

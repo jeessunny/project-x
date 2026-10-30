@@ -104,8 +104,9 @@ jobs:
             app/build/outputs/apk/release/app-release.apk.sha256
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
