@@ -1,6 +1,7 @@
 package com.projectx.studyhelper.presentation.theme
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -19,10 +20,35 @@ enum class ThemeMode {
     DARK
 }
 
+enum class AppColorTheme(
+    val id: String,
+    val displayName: String,
+    val previewColor: Color
+) {
+    PURPLE("purple", "Violet", md_purple_light_primary),
+    BLUE("blue", "Ocean", md_blue_light_primary),
+    GREEN("green", "Emerald", md_green_light_primary),
+    ORANGE("orange", "Sunset", md_orange_light_primary),
+    ROSE("rose", "Rose", md_rose_light_primary)
+}
+
+enum class TimerAnimationStyle(
+    val id: String,
+    val displayName: String,
+    val description: String
+) {
+    DEFAULT("classic", "Classic Circle", "Standard clean circular progress ring"),
+    WIGGLY("wiggly", "Wiggly Wave", "Dynamic undulating wavy progress"),
+    SEGMENTED("segmented", "Material Segmented", "Stepped radial tick marks & dashes"),
+    PULSING_GLOW("pulsing", "Pulsing Halo", "Breathing outer aura and glowing pulse")
+}
+
 data class ThemeConfig(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val amoledBlack: Boolean = false,
-    val useDynamicColor: Boolean = true
+    val useDynamicColor: Boolean = true,
+    val colorTheme: AppColorTheme = AppColorTheme.PURPLE,
+    val timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT
 )
 
 private val Context.themeDataStore: DataStore<Preferences> by preferencesDataStore(name = "theme_preferences")
@@ -33,6 +59,8 @@ class ThemePreferences(private val context: Context) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val AMOLED_BLACK = booleanPreferencesKey("amoled_black")
         val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+        val COLOR_THEME = stringPreferencesKey("color_theme")
+        val TIMER_ANIMATION = stringPreferencesKey("timer_animation")
     }
 
     val themeConfigFlow: Flow<ThemeConfig> = context.themeDataStore.data
@@ -53,10 +81,26 @@ class ThemePreferences(private val context: Context) {
             val amoledBlack = prefs[Keys.AMOLED_BLACK] ?: false
             val useDynamicColor = prefs[Keys.USE_DYNAMIC_COLOR] ?: true
 
+            val colorThemeString = prefs[Keys.COLOR_THEME] ?: AppColorTheme.PURPLE.name
+            val colorTheme = try {
+                AppColorTheme.valueOf(colorThemeString)
+            } catch (e: Exception) {
+                AppColorTheme.PURPLE
+            }
+
+            val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.DEFAULT.name
+            val timerAnimation = try {
+                TimerAnimationStyle.valueOf(timerAnimString)
+            } catch (e: Exception) {
+                TimerAnimationStyle.DEFAULT
+            }
+
             ThemeConfig(
                 themeMode = themeMode,
                 amoledBlack = amoledBlack,
-                useDynamicColor = useDynamicColor
+                useDynamicColor = useDynamicColor,
+                colorTheme = colorTheme,
+                timerAnimation = timerAnimation
             )
         }
 
@@ -75,6 +119,19 @@ class ThemePreferences(private val context: Context) {
     suspend fun setUseDynamicColor(enabled: Boolean) {
         context.themeDataStore.edit { prefs ->
             prefs[Keys.USE_DYNAMIC_COLOR] = enabled
+        }
+    }
+
+    suspend fun setColorTheme(colorTheme: AppColorTheme) {
+        context.themeDataStore.edit { prefs ->
+            prefs[Keys.COLOR_THEME] = colorTheme.name
+            prefs[Keys.USE_DYNAMIC_COLOR] = false
+        }
+    }
+
+    suspend fun setTimerAnimation(animationStyle: TimerAnimationStyle) {
+        context.themeDataStore.edit { prefs ->
+            prefs[Keys.TIMER_ANIMATION] = animationStyle.name
         }
     }
 }

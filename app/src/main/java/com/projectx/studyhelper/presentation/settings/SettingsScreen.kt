@@ -2,10 +2,13 @@ package com.projectx.studyhelper.presentation.settings
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,19 +20,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DataUsage
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.material.icons.filled.Waves
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -56,11 +66,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.projectx.studyhelper.domain.model.StudyPreset
+import com.projectx.studyhelper.presentation.theme.AppColorTheme
 import com.projectx.studyhelper.presentation.theme.ThemeMode
+import com.projectx.studyhelper.presentation.theme.TimerAnimationStyle
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +86,8 @@ fun SettingsScreen(
     onSetThemeMode: (ThemeMode) -> Unit,
     onSetAmoledBlack: (Boolean) -> Unit,
     onSetUseDynamicColor: (Boolean) -> Unit,
+    onSetColorTheme: (AppColorTheme) -> Unit,
+    onSetTimerAnimation: (TimerAnimationStyle) -> Unit,
     onSetDefaultPreset: (StudyPreset) -> Unit,
     onSetDailyGoalMinutes: (Int) -> Unit,
     onCheckForUpdates: () -> Unit
@@ -168,37 +186,198 @@ fun SettingsScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                // Dynamic System Color Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.ColorLens,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Dynamic System Colors (Material You)",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                // Accent Palette & Material You Options
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.ColorLens,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (uiState.themeConfig.useDynamicColor) "Extracts colors dynamically from your device wallpaper" else "Using classic high-contrast Purple palette",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "Accent Palette",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                    Switch(
-                        checked = uiState.themeConfig.useDynamicColor,
-                        onCheckedChange = onSetUseDynamicColor
+                    Text(
+                        text = if (uiState.themeConfig.useDynamicColor) "Dynamic Material You extracted from device wallpaper" else "Custom Palette: ${uiState.themeConfig.colorTheme.displayName}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Option 1: Dynamic Material You Swatch
+                        val isDynamicSelected = uiState.themeConfig.useDynamicColor
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable { onSetUseDynamicColor(true) }
+                                .padding(vertical = 4.dp, horizontal = 2.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(46.dp)
+                                    .border(
+                                        width = if (isDynamicSelected) 2.5.dp else 1.dp,
+                                        color = if (isDynamicSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(3.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape)
+                                        .background(
+                                            Brush.sweepGradient(
+                                                listOf(
+                                                    Color(0xFF4285F4),
+                                                    Color(0xFF34A853),
+                                                    Color(0xFFFBBC05),
+                                                    Color(0xFFEA4335),
+                                                    Color(0xFF4285F4)
+                                                )
+                                            )
+                                        )
+                                ) {
+                                    if (isDynamicSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Selected",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.AutoAwesome,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Dynamic",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = if (isDynamicSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isDynamicSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        // Options 2-6: The 5 Static Color Themes
+                        AppColorTheme.values().forEach { theme ->
+                            val isColorSelected = !uiState.themeConfig.useDynamicColor && uiState.themeConfig.colorTheme == theme
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .clickable { onSetColorTheme(theme) }
+                                    .padding(vertical = 4.dp, horizontal = 2.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .border(
+                                            width = if (isColorSelected) 2.5.dp else 1.dp,
+                                            color = if (isColorSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                            shape = CircleShape
+                                        )
+                                        .padding(3.dp)
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape)
+                                            .background(theme.previewColor)
+                                    ) {
+                                        if (isColorSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Selected",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = theme.displayName,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isColorSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isColorSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Timer Animation Style Selector
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.GraphicEq,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Timer Animation Style",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Text(
+                        text = uiState.themeConfig.timerAnimation.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TimerAnimationStyle.values().forEach { style ->
+                            FilterChip(
+                                selected = uiState.themeConfig.timerAnimation == style,
+                                onClick = { onSetTimerAnimation(style) },
+                                label = { Text(style.displayName) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = when (style) {
+                                            TimerAnimationStyle.DEFAULT -> Icons.Default.Circle
+                                            TimerAnimationStyle.WIGGLY -> Icons.Default.Waves
+                                            TimerAnimationStyle.SEGMENTED -> Icons.Default.DataUsage
+                                            TimerAnimationStyle.PULSING_GLOW -> Icons.Default.GraphicEq
+                                        },
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

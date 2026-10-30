@@ -123,6 +123,7 @@ fun AppNavigation(
             composable(Screen.Study.route) {
                 StudyScreen(
                     uiState = timerUiState,
+                    timerAnimation = settingsUiState.themeConfig.timerAnimation,
                     onSelectPreset = timerViewModel::selectPreset,
                     onOpenCustomPicker = timerViewModel::openCustomPicker,
                     onCloseCustomPicker = timerViewModel::closeCustomPicker,
@@ -145,6 +146,8 @@ fun AppNavigation(
                     onSetThemeMode = settingsViewModel::setThemeMode,
                     onSetAmoledBlack = settingsViewModel::setAmoledBlack,
                     onSetUseDynamicColor = settingsViewModel::setUseDynamicColor,
+                    onSetColorTheme = settingsViewModel::setColorTheme,
+                    onSetTimerAnimation = settingsViewModel::setTimerAnimation,
                     onSetDefaultPreset = settingsViewModel::setDefaultPreset,
                     onSetDailyGoalMinutes = settingsViewModel::setDailyGoalMinutes,
                     onCheckForUpdates = settingsViewModel::checkForUpdatesManual

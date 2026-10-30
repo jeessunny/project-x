@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// 1. Classic Purple Palette
 private val PurpleLightColorScheme = lightColorScheme(
     primary = md_purple_light_primary,
     onPrimary = md_purple_light_onPrimary,
@@ -68,6 +69,228 @@ private val PurpleDarkColorScheme = darkColorScheme(
     outline = md_purple_dark_outline
 )
 
+// 2. Ocean Blue Palette
+private val BlueLightColorScheme = lightColorScheme(
+    primary = md_blue_light_primary,
+    onPrimary = md_blue_light_onPrimary,
+    primaryContainer = md_blue_light_primaryContainer,
+    onPrimaryContainer = md_blue_light_onPrimaryContainer,
+    secondary = md_blue_light_secondary,
+    onSecondary = md_blue_light_onSecondary,
+    secondaryContainer = md_blue_light_secondaryContainer,
+    onSecondaryContainer = md_blue_light_onSecondaryContainer,
+    tertiary = md_blue_light_tertiary,
+    onTertiary = md_blue_light_onTertiary,
+    tertiaryContainer = md_blue_light_tertiaryContainer,
+    onTertiaryContainer = md_blue_light_onTertiaryContainer,
+    error = md_theme_error,
+    errorContainer = md_theme_errorContainer,
+    onError = md_theme_onError,
+    onErrorContainer = md_theme_onErrorContainer,
+    background = md_blue_light_background,
+    onBackground = md_blue_light_onBackground,
+    surface = md_blue_light_surface,
+    onSurface = md_blue_light_onSurface,
+    surfaceVariant = md_blue_light_surfaceVariant,
+    onSurfaceVariant = md_blue_light_onSurfaceVariant,
+    outline = md_blue_light_outline
+)
+
+private val BlueDarkColorScheme = darkColorScheme(
+    primary = md_blue_dark_primary,
+    onPrimary = md_blue_dark_onPrimary,
+    primaryContainer = md_blue_dark_primaryContainer,
+    onPrimaryContainer = md_blue_dark_onPrimaryContainer,
+    secondary = md_blue_dark_secondary,
+    onSecondary = md_blue_dark_onSecondary,
+    secondaryContainer = md_blue_dark_secondaryContainer,
+    onSecondaryContainer = md_blue_dark_onSecondaryContainer,
+    tertiary = md_blue_dark_tertiary,
+    onTertiary = md_blue_dark_onTertiary,
+    tertiaryContainer = md_blue_dark_tertiaryContainer,
+    onTertiaryContainer = md_blue_dark_onTertiaryContainer,
+    error = md_theme_dark_error,
+    errorContainer = md_theme_dark_errorContainer,
+    onError = md_theme_dark_onError,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    background = md_blue_dark_background,
+    onBackground = md_blue_dark_onBackground,
+    surface = md_blue_dark_surface,
+    onSurface = md_blue_dark_onSurface,
+    surfaceVariant = md_blue_dark_surfaceVariant,
+    onSurfaceVariant = md_blue_dark_onSurfaceVariant,
+    outline = md_blue_dark_outline
+)
+
+// 3. Emerald Green Palette
+private val GreenLightColorScheme = lightColorScheme(
+    primary = md_green_light_primary,
+    onPrimary = md_green_light_onPrimary,
+    primaryContainer = md_green_light_primaryContainer,
+    onPrimaryContainer = md_green_light_onPrimaryContainer,
+    secondary = md_green_light_secondary,
+    onSecondary = md_green_light_onSecondary,
+    secondaryContainer = md_green_light_secondaryContainer,
+    onSecondaryContainer = md_green_light_onSecondaryContainer,
+    tertiary = md_green_light_tertiary,
+    onTertiary = md_green_light_onTertiary,
+    tertiaryContainer = md_green_light_tertiaryContainer,
+    onTertiaryContainer = md_green_light_onTertiaryContainer,
+    error = md_theme_error,
+    errorContainer = md_theme_errorContainer,
+    onError = md_theme_onError,
+    onErrorContainer = md_theme_onErrorContainer,
+    background = md_green_light_background,
+    onBackground = md_green_light_onBackground,
+    surface = md_green_light_surface,
+    onSurface = md_green_light_onSurface,
+    surfaceVariant = md_green_light_surfaceVariant,
+    onSurfaceVariant = md_green_light_onSurfaceVariant,
+    outline = md_green_light_outline
+)
+
+private val GreenDarkColorScheme = darkColorScheme(
+    primary = md_green_dark_primary,
+    onPrimary = md_green_dark_onPrimary,
+    primaryContainer = md_green_dark_primaryContainer,
+    onPrimaryContainer = md_green_dark_onPrimaryContainer,
+    secondary = md_green_dark_secondary,
+    onSecondary = md_green_dark_onSecondary,
+    secondaryContainer = md_green_dark_secondaryContainer,
+    onSecondaryContainer = md_green_dark_onSecondaryContainer,
+    tertiary = md_green_dark_tertiary,
+    onTertiary = md_green_dark_onTertiary,
+    tertiaryContainer = md_green_dark_tertiaryContainer,
+    onTertiaryContainer = md_green_dark_onTertiaryContainer,
+    error = md_theme_dark_error,
+    errorContainer = md_theme_dark_errorContainer,
+    onError = md_theme_dark_onError,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    background = md_green_dark_background,
+    onBackground = md_green_dark_onBackground,
+    surface = md_green_dark_surface,
+    onSurface = md_green_dark_onSurface,
+    surfaceVariant = md_green_dark_surfaceVariant,
+    onSurfaceVariant = md_green_dark_onSurfaceVariant,
+    outline = md_green_dark_outline
+)
+
+// 4. Sunset Orange Palette
+private val OrangeLightColorScheme = lightColorScheme(
+    primary = md_orange_light_primary,
+    onPrimary = md_orange_light_onPrimary,
+    primaryContainer = md_orange_light_primaryContainer,
+    onPrimaryContainer = md_orange_light_onPrimaryContainer,
+    secondary = md_orange_light_secondary,
+    onSecondary = md_orange_light_onSecondary,
+    secondaryContainer = md_orange_light_secondaryContainer,
+    onSecondaryContainer = md_orange_light_onSecondaryContainer,
+    tertiary = md_orange_light_tertiary,
+    onTertiary = md_orange_light_onTertiary,
+    tertiaryContainer = md_orange_light_tertiaryContainer,
+    onTertiaryContainer = md_orange_light_onTertiaryContainer,
+    error = md_theme_error,
+    errorContainer = md_theme_errorContainer,
+    onError = md_theme_onError,
+    onErrorContainer = md_theme_onErrorContainer,
+    background = md_orange_light_background,
+    onBackground = md_orange_light_onBackground,
+    surface = md_orange_light_surface,
+    onSurface = md_orange_light_onSurface,
+    surfaceVariant = md_orange_light_surfaceVariant,
+    onSurfaceVariant = md_orange_light_onSurfaceVariant,
+    outline = md_orange_light_outline
+)
+
+private val OrangeDarkColorScheme = darkColorScheme(
+    primary = md_orange_dark_primary,
+    onPrimary = md_orange_dark_onPrimary,
+    primaryContainer = md_orange_dark_primaryContainer,
+    onPrimaryContainer = md_orange_dark_onPrimaryContainer,
+    secondary = md_orange_dark_secondary,
+    onSecondary = md_orange_dark_onSecondary,
+    secondaryContainer = md_orange_dark_secondaryContainer,
+    onSecondaryContainer = md_orange_dark_onSecondaryContainer,
+    tertiary = md_orange_dark_tertiary,
+    onTertiary = md_orange_dark_onTertiary,
+    tertiaryContainer = md_orange_dark_tertiaryContainer,
+    onTertiaryContainer = md_orange_dark_onTertiaryContainer,
+    error = md_theme_dark_error,
+    errorContainer = md_theme_dark_errorContainer,
+    onError = md_theme_dark_onError,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    background = md_orange_dark_background,
+    onBackground = md_orange_dark_onBackground,
+    surface = md_orange_dark_surface,
+    onSurface = md_orange_dark_onSurface,
+    surfaceVariant = md_orange_dark_surfaceVariant,
+    onSurfaceVariant = md_orange_dark_onSurfaceVariant,
+    outline = md_orange_dark_outline
+)
+
+// 5. Rose Pink Palette
+private val RoseLightColorScheme = lightColorScheme(
+    primary = md_rose_light_primary,
+    onPrimary = md_rose_light_onPrimary,
+    primaryContainer = md_rose_light_primaryContainer,
+    onPrimaryContainer = md_rose_light_onPrimaryContainer,
+    secondary = md_rose_light_secondary,
+    onSecondary = md_rose_light_onSecondary,
+    secondaryContainer = md_rose_light_secondaryContainer,
+    onSecondaryContainer = md_rose_light_onSecondaryContainer,
+    tertiary = md_rose_light_tertiary,
+    onTertiary = md_rose_light_onTertiary,
+    tertiaryContainer = md_rose_light_tertiaryContainer,
+    onTertiaryContainer = md_rose_light_onTertiaryContainer,
+    error = md_theme_error,
+    errorContainer = md_theme_errorContainer,
+    onError = md_theme_onError,
+    onErrorContainer = md_theme_onErrorContainer,
+    background = md_rose_light_background,
+    onBackground = md_rose_light_onBackground,
+    surface = md_rose_light_surface,
+    onSurface = md_rose_light_onSurface,
+    surfaceVariant = md_rose_light_surfaceVariant,
+    onSurfaceVariant = md_rose_light_onSurfaceVariant,
+    outline = md_rose_light_outline
+)
+
+private val RoseDarkColorScheme = darkColorScheme(
+    primary = md_rose_dark_primary,
+    onPrimary = md_rose_dark_onPrimary,
+    primaryContainer = md_rose_dark_primaryContainer,
+    onPrimaryContainer = md_rose_dark_onPrimaryContainer,
+    secondary = md_rose_dark_secondary,
+    onSecondary = md_rose_dark_onSecondary,
+    secondaryContainer = md_rose_dark_secondaryContainer,
+    onSecondaryContainer = md_rose_dark_onSecondaryContainer,
+    tertiary = md_rose_dark_tertiary,
+    onTertiary = md_rose_dark_onTertiary,
+    tertiaryContainer = md_rose_dark_tertiaryContainer,
+    onTertiaryContainer = md_rose_dark_onTertiaryContainer,
+    error = md_theme_dark_error,
+    errorContainer = md_theme_dark_errorContainer,
+    onError = md_theme_dark_onError,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    background = md_rose_dark_background,
+    onBackground = md_rose_dark_onBackground,
+    surface = md_rose_dark_surface,
+    onSurface = md_rose_dark_onSurface,
+    surfaceVariant = md_rose_dark_surfaceVariant,
+    onSurfaceVariant = md_rose_dark_onSurfaceVariant,
+    outline = md_rose_dark_outline
+)
+
+private fun getStaticColorScheme(colorTheme: AppColorTheme, isDark: Boolean): ColorScheme {
+    return when (colorTheme) {
+        AppColorTheme.PURPLE -> if (isDark) PurpleDarkColorScheme else PurpleLightColorScheme
+        AppColorTheme.BLUE -> if (isDark) BlueDarkColorScheme else BlueLightColorScheme
+        AppColorTheme.GREEN -> if (isDark) GreenDarkColorScheme else GreenLightColorScheme
+        AppColorTheme.ORANGE -> if (isDark) OrangeDarkColorScheme else OrangeLightColorScheme
+        AppColorTheme.ROSE -> if (isDark) RoseDarkColorScheme else RoseLightColorScheme
+    }
+}
+
 @Composable
 fun StudyHelperTheme(
     themeConfig: ThemeConfig = ThemeConfig(),
@@ -90,11 +313,10 @@ fun StudyHelperTheme(
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             } catch (e: Throwable) {
                 Log.w("StudyHelperTheme", "Dynamic color extraction fallback to static palette: ${e.message}")
-                if (isDark) PurpleDarkColorScheme else PurpleLightColorScheme
+                getStaticColorScheme(themeConfig.colorTheme, isDark)
             }
         }
-        isDark -> PurpleDarkColorScheme
-        else -> PurpleLightColorScheme
+        else -> getStaticColorScheme(themeConfig.colorTheme, isDark)
     }
 
     val finalColorScheme = if (isDark && themeConfig.amoledBlack) {

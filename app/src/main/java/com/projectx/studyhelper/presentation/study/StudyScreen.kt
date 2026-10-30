@@ -67,23 +67,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import com.projectx.studyhelper.domain.manager.TimerState
 import com.projectx.studyhelper.domain.manager.TimerStatus
 import com.projectx.studyhelper.domain.model.StudyPreset
 import com.projectx.studyhelper.presentation.theme.HealthRuleBlue
 import com.projectx.studyhelper.presentation.theme.StreakFlameColor
+import com.projectx.studyhelper.presentation.theme.TimerAnimationStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudyScreen(
     uiState: StudyUiState,
+    timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT,
     onSelectPreset: (StudyPreset) -> Unit,
     onOpenCustomPicker: () -> Unit,
     onCloseCustomPicker: () -> Unit,
@@ -124,6 +140,7 @@ fun StudyScreen(
         // Focus Timer Display (Strict Mode: No Pause)
         StrictTimerDisplayCard(
             timerState = uiState.timerState,
+            timerAnimation = timerAnimation,
             onStart = onStartTimer,
             onStop = onPromptAbort,
             onResetCompleted = onResetCompleted
@@ -338,6 +355,7 @@ fun StudyPresetChipsSection(
 @Composable
 fun StrictTimerDisplayCard(
     timerState: TimerState,
+    timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT,
     onStart: () -> Unit,
     onStop: () -> Unit,
     onResetCompleted: () -> Unit
@@ -359,18 +377,12 @@ fun StrictTimerDisplayCard(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(210.dp)
             ) {
-                CircularProgressIndicator(
-                    progress = { 1f },
-                    modifier = Modifier.size(210.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    strokeWidth = 12.dp
-                )
-
-                CircularProgressIndicator(
-                    progress = { timerState.progress },
-                    modifier = Modifier.size(210.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 12.dp
+                // Configurable Animation Dial: Classic, Wiggly Wave, Segmented, or Pulsing Halo
+                TimerProgressDial(
+                    progress = timerState.progress,
+                    status = timerState.status,
+                    animationStyle = timerAnimation,
+                    modifier = Modifier.size(210.dp)
                 )
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -465,6 +477,219 @@ fun StrictTimerDisplayCard(
                         Text("Session Complete! Return to Ready", style = MaterialTheme.typography.labelLarge)
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Renders the chosen Timer Animation Style:
+ * 1. DEFAULT: Classic circular progress ring (original).
+ * 2. WIGGLY: Sinusoidal oscillating wave progress running smoothly along the arc.
+ * 3. SEGMENTED: 60 precision radial tick marks with major 5-minute ticks and pulsing leading edge.
+ * 4. PULSING_GLOW: Concentric breathing neon halo pulsing gently around the circular progress arc.
+ */
+@Composable
+fun TimerProgressDial(
+    progress: Float,
+    status: TimerStatus,
+    animationStyle: TimerAnimationStyle,
+    modifier: Modifier = Modifier.size(210.dp)
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val isRunning = status == TimerStatus.Running
+
+    when (animationStyle) {
+        TimerAnimationStyle.DEFAULT -> {
+            CircularProgressIndicator(
+                progress = { 1f },
+                modifier = modifier,
+                color = trackColor,
+                strokeWidth = 12.dp
+            )
+            CircularProgressIndicator(
+                progress = { progress },
+                modifier = modifier,
+                color = primaryColor,
+                strokeWidth = 12.dp
+            )
+        }
+
+        TimerAnimationStyle.WIGGLY -> {
+            val infiniteTransition = rememberInfiniteTransition(label = "WigglyTransition")
+            val wavePhase by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = (2 * PI).toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "WavePhase"
+            )
+
+            Canvas(modifier = modifier) {
+                val strokePx = 11.dp.toPx()
+                val radius = (size.minDimension / 2f) - (strokePx / 2f) - 6.dp.toPx()
+                val centerOffset = Offset(size.width / 2f, size.height / 2f)
+
+                // Background track
+                drawCircle(
+                    color = trackColor,
+                    radius = radius,
+                    center = centerOffset,
+                    style = Stroke(width = strokePx, cap = StrokeCap.Round)
+                )
+
+                // Foreground wavy path
+                if (progress > 0.005f) {
+                    val sweepAngle = (progress * 360f).coerceIn(0f, 360f)
+                    val steps = (sweepAngle * 2.5f).toInt().coerceAtLeast(15)
+                    val waveFreq = 14f // Number of wave crests around full dial
+                    val amplitude = if (isRunning) 5.5.dp.toPx() else 3.5.dp.toPx()
+                    val path = Path()
+
+                    for (i in 0..steps) {
+                        val fraction = i.toFloat() / steps
+                        val angleDeg = -90f + fraction * sweepAngle
+                        val angleRad = Math.toRadians(angleDeg.toDouble())
+
+                        val wave = sin((fraction * (sweepAngle / 360f) * waveFreq * 2 * PI) + if (isRunning) wavePhase else 0f).toFloat()
+                        val r = radius + wave * amplitude
+                        val x = centerOffset.x + (r * cos(angleRad)).toFloat()
+                        val y = centerOffset.y + (r * sin(angleRad)).toFloat()
+
+                        if (i == 0) {
+                            path.moveTo(x, y)
+                        } else {
+                            path.lineTo(x, y)
+                        }
+                    }
+
+                    drawPath(
+                        path = path,
+                        color = primaryColor,
+                        style = Stroke(
+                            width = strokePx,
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
+                    )
+                }
+            }
+        }
+
+        TimerAnimationStyle.SEGMENTED -> {
+            val infiniteTransition = rememberInfiniteTransition(label = "SegmentedTransition")
+            val pulseAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.45f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(750, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "TickPulse"
+            )
+
+            Canvas(modifier = modifier) {
+                val centerOffset = Offset(size.width / 2f, size.height / 2f)
+                val totalTicks = 60
+                val outerRadius = (size.minDimension / 2f) - 4.dp.toPx()
+                val tickLength = 12.dp.toPx()
+                val activeTickIndex = ((progress * totalTicks).toInt() - 1).coerceAtLeast(-1)
+
+                for (i in 0 until totalTicks) {
+                    val fraction = i.toFloat() / totalTicks
+                    val isMajor = i % 5 == 0
+                    val currentTickLength = if (isMajor) tickLength + 4.dp.toPx() else tickLength
+                    val innerRadius = outerRadius - currentTickLength
+
+                    val angleDeg = -90f + fraction * 360f
+                    val angleRad = Math.toRadians(angleDeg.toDouble())
+                    val cosVal = cos(angleRad).toFloat()
+                    val sinVal = sin(angleRad).toFloat()
+
+                    val start = Offset(
+                        x = centerOffset.x + innerRadius * cosVal,
+                        y = centerOffset.y + innerRadius * sinVal
+                    )
+                    val end = Offset(
+                        x = centerOffset.x + outerRadius * cosVal,
+                        y = centerOffset.y + outerRadius * sinVal
+                    )
+
+                    val isLit = fraction <= progress
+                    val isLeading = i == activeTickIndex && isRunning
+
+                    val color = when {
+                        isLeading -> primaryColor.copy(alpha = pulseAlpha)
+                        isLit -> primaryColor
+                        else -> trackColor.copy(alpha = 0.65f)
+                    }
+                    val strokeWidth = when {
+                        isLeading -> 4.5.dp.toPx()
+                        isLit -> if (isMajor) 4.dp.toPx() else 3.dp.toPx()
+                        else -> if (isMajor) 2.5.dp.toPx() else 1.8.dp.toPx()
+                    }
+
+                    drawLine(
+                        color = color,
+                        start = start,
+                        end = end,
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+                }
+            }
+        }
+
+        TimerAnimationStyle.PULSING_GLOW -> {
+            val infiniteTransition = rememberInfiniteTransition(label = "PulsingHaloTransition")
+            val haloAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.15f,
+                targetValue = 0.6f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1500, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HaloAlpha"
+            )
+            val haloExtraStroke by infiniteTransition.animateFloat(
+                initialValue = 4.dp.value,
+                targetValue = 14.dp.value,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1500, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HaloExpansion"
+            )
+
+            Box(contentAlignment = Alignment.Center, modifier = modifier) {
+                // Background Track
+                CircularProgressIndicator(
+                    progress = { 1f },
+                    modifier = modifier,
+                    color = trackColor,
+                    strokeWidth = 12.dp
+                )
+
+                // Pulsing Halo Glow (Only active while running)
+                if (isRunning && progress > 0.005f) {
+                    CircularProgressIndicator(
+                        progress = { progress },
+                        modifier = modifier,
+                        color = primaryColor.copy(alpha = haloAlpha),
+                        strokeWidth = (12.dp + haloExtraStroke.dp)
+                    )
+                }
+
+                // Sharp Foreground Progress Arc
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = modifier,
+                    color = primaryColor,
+                    strokeWidth = 12.dp
+                )
             }
         }
     }
@@ -629,11 +854,22 @@ fun StreakSummaryCard(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
-                            text = if (isCompletedToday) "Completed for today! 🔥" else "Keep the flame burning today",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isCompletedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (isCompletedToday) "Completed for today!" else "Keep the flame burning today",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isCompletedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (isCompletedToday) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.LocalFireDepartment,
+                                    contentDescription = null,
+                                    tint = StreakFlameColor,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }

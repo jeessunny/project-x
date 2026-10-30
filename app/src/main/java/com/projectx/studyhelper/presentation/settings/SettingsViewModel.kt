@@ -9,9 +9,11 @@ import com.projectx.studyhelper.data.updater.UpdateManager
 import com.projectx.studyhelper.domain.model.StudyPreset
 import com.projectx.studyhelper.domain.model.UpdateInfo
 import com.projectx.studyhelper.domain.repository.StreakRepository
+import com.projectx.studyhelper.presentation.theme.AppColorTheme
 import com.projectx.studyhelper.presentation.theme.ThemeConfig
 import com.projectx.studyhelper.presentation.theme.ThemeMode
 import com.projectx.studyhelper.presentation.theme.ThemePreferences
+import com.projectx.studyhelper.presentation.theme.TimerAnimationStyle
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -68,6 +70,18 @@ class SettingsViewModel(
     fun setUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             themePreferences.setUseDynamicColor(enabled)
+        }
+    }
+
+    fun setColorTheme(theme: AppColorTheme) {
+        viewModelScope.launch {
+            themePreferences.setColorTheme(theme)
+        }
+    }
+
+    fun setTimerAnimation(style: TimerAnimationStyle) {
+        viewModelScope.launch {
+            themePreferences.setTimerAnimation(style)
         }
     }
 
