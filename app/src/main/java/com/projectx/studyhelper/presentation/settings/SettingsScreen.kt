@@ -258,7 +258,7 @@ fun SettingsScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                // Configurable Daily Study Progress Limit (Default 45 min)
+                // Configurable Daily Study Progress Limit: Same 15m, 20m, 45m & Custom options
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -269,13 +269,13 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Daily Progress Limit (Goal)",
+                            text = "Daily Progress Limit",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
                     Text(
-                        text = "Current Goal: ${uiState.dailyGoalMinutes} min / day (Streak triggers upon reaching this limit)",
+                        text = "Current Target: ${uiState.dailyGoalMinutes} min / day (Streak triggers upon reaching this limit)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -285,19 +285,29 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf(30, 45, 60, 90).forEach { goalMinutes ->
+                        StudyPreset.standardPresets.forEach { preset ->
+                            val isDefault = preset.minutes == 45
                             FilterChip(
-                                selected = uiState.dailyGoalMinutes == goalMinutes,
-                                onClick = { onSetDailyGoalMinutes(goalMinutes) },
-                                label = { Text(if (goalMinutes == 45) "45m (Default)" else "${goalMinutes}m") }
+                                selected = uiState.dailyGoalMinutes == preset.minutes,
+                                onClick = { onSetDailyGoalMinutes(preset.minutes) },
+                                label = { Text(if (isDefault) "${preset.label} (Default)" else preset.label) }
                             )
                         }
 
-                        val isCustomGoal = uiState.dailyGoalMinutes !in listOf(30, 45, 60, 90)
+                        val isCustomGoal = uiState.dailyGoalMinutes !in StudyPreset.standardPresets.map { it.minutes }
                         FilterChip(
                             selected = isCustomGoal,
                             onClick = { isCustomDailyGoalDialogOpen = true },
-                            label = { Text(if (isCustomGoal) "${uiState.dailyGoalMinutes}m" else "Custom...") }
+                            label = {
+                                Text(if (isCustomGoal) "Custom (${uiState.dailyGoalMinutes}m)" else "Custom...")
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         )
                     }
                 }
@@ -451,7 +461,7 @@ fun SettingsScreen(
 
     // Custom Daily Goal Dialog
     if (isCustomDailyGoalDialogOpen) {
-        var goal by remember { mutableFloatStateOf(uiState.dailyGoalMinutes.toFloat().coerceIn(15f, 240f)) }
+        var goal by remember { mutableFloatStateOf(uiState.dailyGoalMinutes.toFloat().coerceIn(10f, 240f)) }
         AlertDialog(
             onDismissRequest = { isCustomDailyGoalDialogOpen = false },
             title = { Text("Custom Daily Study Goal") },
@@ -467,8 +477,8 @@ fun SettingsScreen(
                     Slider(
                         value = goal,
                         onValueChange = { goal = it },
-                        valueRange = 15f..240f,
-                        steps = 44, // 5 min steps
+                        valueRange = 10f..240f,
+                        steps = 46, // 5 min steps
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
