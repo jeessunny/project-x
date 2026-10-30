@@ -369,7 +369,7 @@ fun SettingsScreen(
                                             TimerAnimationStyle.DEFAULT -> Icons.Default.Circle
                                             TimerAnimationStyle.WIGGLY -> Icons.Default.Waves
                                             TimerAnimationStyle.SEGMENTED -> Icons.Default.DataUsage
-                                            TimerAnimationStyle.PULSING_GLOW -> Icons.Default.GraphicEq
+                                            TimerAnimationStyle.GLOW -> Icons.Default.LightMode
                                         },
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp)

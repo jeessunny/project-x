@@ -40,7 +40,7 @@ enum class TimerAnimationStyle(
     DEFAULT("classic", "Classic Circle", "Standard clean circular progress ring"),
     WIGGLY("wiggly", "Wiggly Wave", "Dynamic undulating wavy progress"),
     SEGMENTED("segmented", "Material Segmented", "Stepped radial tick marks & dashes"),
-    PULSING_GLOW("pulsing", "Pulsing Halo", "Breathing outer aura and glowing pulse")
+    GLOW("glow", "Glow", "Radiant single ring with glowing neon effect")
 }
 
 data class ThemeConfig(
@@ -90,7 +90,11 @@ class ThemePreferences(private val context: Context) {
 
             val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.DEFAULT.name
             val timerAnimation = try {
-                TimerAnimationStyle.valueOf(timerAnimString)
+                if (timerAnimString == "PULSING_GLOW" || timerAnimString == "pulsing") {
+                    TimerAnimationStyle.GLOW
+                } else {
+                    TimerAnimationStyle.valueOf(timerAnimString)
+                }
             } catch (e: Exception) {
                 TimerAnimationStyle.DEFAULT
             }

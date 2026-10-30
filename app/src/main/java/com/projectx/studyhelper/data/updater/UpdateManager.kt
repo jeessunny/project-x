@@ -93,10 +93,6 @@ class UpdateManager(
         )
         _showDialog.value = true
 
-        scope.launch {
-            _userFeedbackMessage.emit("Gathering update package & connecting to server...")
-        }
-
         downloadJob = scope.launch {
             appInstaller.downloadApk(updateInfo.downloadUrl).collect { progress ->
                 when (progress) {
@@ -109,7 +105,6 @@ class UpdateManager(
                     }
                     is DownloadProgress.Completed -> {
                         _updateState.value = UpdateState.ReadyToInstall(updateInfo)
-                        _userFeedbackMessage.emit("Download complete! Ready to install.")
                     }
                     is DownloadProgress.Error -> {
                         _updateState.value = UpdateState.Error(
@@ -123,10 +118,6 @@ class UpdateManager(
     }
 
     fun installDownloadedApk(context: Context): Boolean {
-        scope.launch {
-            _userFeedbackMessage.emit("Preparing Android Package Installer...")
-        }
-
         if (!appInstaller.canInstallPackages()) {
             val intent = appInstaller.createRequestInstallPermissionIntent()
             context.startActivity(intent)

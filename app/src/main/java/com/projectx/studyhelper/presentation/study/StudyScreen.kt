@@ -12,6 +12,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +57,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -182,21 +184,37 @@ fun StudyScreen(
                 )
             },
             confirmButton = {
-                Button(
-                    onClick = onConfirmAbort,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Abandon Session")
+                    Button(
+                        onClick = onDismissAbort,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text(
+                            text = "Keep Focusing",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = onConfirmAbort,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+                    ) {
+                        Text(
+                            text = "Abandon Session",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = onDismissAbort) {
-                    Text("Keep Focusing")
-                }
-            }
+            dismissButton = null
         )
     }
 
@@ -487,7 +505,7 @@ fun StrictTimerDisplayCard(
  * 1. DEFAULT: Classic circular progress ring (original).
  * 2. WIGGLY: Sinusoidal oscillating wave progress running smoothly along the arc.
  * 3. SEGMENTED: 60 precision radial tick marks with major 5-minute ticks and pulsing leading edge.
- * 4. PULSING_GLOW: Concentric breathing neon halo pulsing gently around the circular progress arc.
+ * 4. GLOW: Radiant single ring with glowing neon effect.
  */
 @Composable
 fun TimerProgressDial(
@@ -592,7 +610,12 @@ fun TimerProgressDial(
                 val totalTicks = 60
                 val outerRadius = (size.minDimension / 2f) - 4.dp.toPx()
                 val tickLength = 12.dp.toPx()
-                val activeTickIndex = ((progress * totalTicks).toInt() - 1).coerceAtLeast(-1)
+                val activeTickIndex = if (isRunning) {
+                    (progress * totalTicks).toInt().coerceIn(0, totalTicks - 1)
+                } else {
+                    0
+                }
+                val isCompletedSession = status == TimerStatus.Completed
 
                 for (i in 0 until totalTicks) {
                     val fraction = i.toFloat() / totalTicks
@@ -614,8 +637,8 @@ fun TimerProgressDial(
                         y = centerOffset.y + outerRadius * sinVal
                     )
 
-                    val isLit = fraction <= progress
-                    val isLeading = i == activeTickIndex && isRunning
+                    val isLit = isCompletedSession || (isRunning && i < activeTickIndex)
+                    val isLeading = !isCompletedSession && (i == activeTickIndex) && (isRunning || status == TimerStatus.Idle)
 
                     val color = when {
                         isLeading -> primaryColor.copy(alpha = pulseAlpha)
@@ -639,25 +662,25 @@ fun TimerProgressDial(
             }
         }
 
-        TimerAnimationStyle.PULSING_GLOW -> {
-            val infiniteTransition = rememberInfiniteTransition(label = "PulsingHaloTransition")
-            val pulsePhase by infiniteTransition.animateFloat(
+        TimerAnimationStyle.GLOW -> {
+            val infiniteTransition = rememberInfiniteTransition(label = "GlowTransition")
+            val glowPhase by infiniteTransition.animateFloat(
                 initialValue = 0f,
                 targetValue = 1f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 1600, easing = FastOutSlowInEasing),
+                    animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
                     repeatMode = RepeatMode.Reverse
                 ),
-                label = "PulsePhase"
+                label = "GlowPhase"
             )
 
             Canvas(modifier = modifier) {
                 val centerOffset = Offset(size.width / 2f, size.height / 2f)
                 val strokePx = 11.dp.toPx()
-                val baseRadius = (size.minDimension / 2f) - (strokePx / 2f) - 12.dp.toPx()
+                val baseRadius = (size.minDimension / 2f) - (strokePx / 2f) - 10.dp.toPx()
                 val sweepAngle = (progress * 360f).coerceIn(0f, 360f)
 
-                // 1. Base clean background track
+                // 1. Single clean background track at baseRadius
                 drawCircle(
                     color = trackColor,
                     radius = baseRadius,
@@ -665,55 +688,50 @@ fun TimerProgressDial(
                     style = Stroke(width = strokePx, cap = StrokeCap.Round)
                 )
 
-                // 2. Outward radiating breathing neon halo layers
+                // 2. Single radiant glowing arc (NO triple rings: exact same baseRadius)
                 if (sweepAngle > 0.5f) {
-                    // Layer 3: Outer softest aura
-                    val r3 = baseRadius + 10.dp.toPx() * pulsePhase
+                    val arcTopLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius)
+                    val arcSize = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f)
+
+                    // Soft radiant glow diffusion around the single stroke line
                     drawArc(
-                        color = primaryColor.copy(alpha = 0.10f * (0.4f + 0.6f * pulsePhase)),
+                        color = primaryColor.copy(alpha = 0.20f + 0.15f * glowPhase),
                         startAngle = -90f,
                         sweepAngle = sweepAngle,
                         useCenter = false,
-                        topLeft = Offset(centerOffset.x - r3, centerOffset.y - r3),
-                        size = androidx.compose.ui.geometry.Size(r3 * 2f, r3 * 2f),
-                        style = Stroke(width = strokePx + 14.dp.toPx(), cap = StrokeCap.Round)
+                        topLeft = arcTopLeft,
+                        size = arcSize,
+                        style = Stroke(
+                            width = strokePx + 14.dp.toPx() * (0.8f + 0.3f * glowPhase),
+                            cap = StrokeCap.Round
+                        )
                     )
 
-                    // Layer 2: Medium glow aura
-                    val r2 = baseRadius + 4.dp.toPx() * pulsePhase
                     drawArc(
-                        color = primaryColor.copy(alpha = 0.22f * (0.5f + 0.5f * pulsePhase)),
+                        color = primaryColor.copy(alpha = 0.38f + 0.18f * glowPhase),
                         startAngle = -90f,
                         sweepAngle = sweepAngle,
                         useCenter = false,
-                        topLeft = Offset(centerOffset.x - r2, centerOffset.y - r2),
-                        size = androidx.compose.ui.geometry.Size(r2 * 2f, r2 * 2f),
-                        style = Stroke(width = strokePx + 8.dp.toPx(), cap = StrokeCap.Round)
+                        topLeft = arcTopLeft,
+                        size = arcSize,
+                        style = Stroke(
+                            width = strokePx + 6.dp.toPx() * (0.85f + 0.25f * glowPhase),
+                            cap = StrokeCap.Round
+                        )
                     )
 
-                    // Layer 1: Close intense glow
-                    drawArc(
-                        color = primaryColor.copy(alpha = 0.35f * (0.6f + 0.4f * pulsePhase)),
-                        startAngle = -90f,
-                        sweepAngle = sweepAngle,
-                        useCenter = false,
-                        topLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius),
-                        size = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f),
-                        style = Stroke(width = strokePx + 4.dp.toPx(), cap = StrokeCap.Round)
-                    )
-
-                    // 3. Crisp solid foreground progress arc
+                    // Core crisp single progress arc at the exact same baseRadius
                     drawArc(
                         color = primaryColor,
                         startAngle = -90f,
                         sweepAngle = sweepAngle,
                         useCenter = false,
-                        topLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius),
-                        size = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f),
+                        topLeft = arcTopLeft,
+                        size = arcSize,
                         style = Stroke(width = strokePx, cap = StrokeCap.Round)
                     )
 
-                    // 4. Glowing beacon flare at the active progress head
+                    // Glowing neon head tip
                     if (isRunning) {
                         val headAngleDeg = -90f + sweepAngle
                         val headAngleRad = Math.toRadians(headAngleDeg.toDouble())
@@ -721,35 +739,27 @@ fun TimerProgressDial(
                         val headY = centerOffset.y + (baseRadius * sin(headAngleRad)).toFloat()
                         val headOffset = Offset(headX, headY)
 
-                        // Outer beacon flare
                         drawCircle(
-                            color = primaryColor.copy(alpha = 0.35f * pulsePhase),
-                            radius = 12.dp.toPx() + 6.dp.toPx() * pulsePhase,
+                            color = primaryColor.copy(alpha = 0.45f * (0.6f + 0.4f * glowPhase)),
+                            radius = 9.dp.toPx() + 3.dp.toPx() * glowPhase,
                             center = headOffset
                         )
-                        // Middle glow
-                        drawCircle(
-                            color = primaryColor.copy(alpha = 0.8f),
-                            radius = 6.dp.toPx(),
-                            center = headOffset
-                        )
-                        // White brilliant core
                         drawCircle(
                             color = Color.White,
-                            radius = 3.dp.toPx(),
+                            radius = 3.5.dp.toPx(),
                             center = headOffset
                         )
                     }
                 } else if (isRunning || status == TimerStatus.Idle) {
-                    // Subtle ambient beacon at 12 o'clock when ready or at zero progress
+                    // Soft resting glow beacon at 12 o'clock
                     val headOffset = Offset(centerOffset.x, centerOffset.y - baseRadius)
                     drawCircle(
-                        color = primaryColor.copy(alpha = 0.25f * pulsePhase),
-                        radius = 8.dp.toPx() + 4.dp.toPx() * pulsePhase,
+                        color = primaryColor.copy(alpha = 0.3f * (0.5f + 0.5f * glowPhase)),
+                        radius = 8.dp.toPx(),
                         center = headOffset
                     )
                     drawCircle(
-                        color = primaryColor.copy(alpha = 0.6f),
+                        color = primaryColor,
                         radius = 4.dp.toPx(),
                         center = headOffset
                     )
