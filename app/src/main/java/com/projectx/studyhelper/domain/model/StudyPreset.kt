@@ -12,8 +12,9 @@ sealed class StudyPreset(val minutes: Int, val label: String) {
     val isTwentyMinuteRule: Boolean
         get() = minutes == 20
 
+    // Only strictly greater than 45 minutes triggers the extended block advice
     val isLongSession: Boolean
-        get() = minutes >= 45
+        get() = minutes > 45
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -30,7 +31,6 @@ sealed class StudyPreset(val minutes: Int, val label: String) {
         val FORTY_FIVE_MINUTES: StudyPreset
             get() = FortyFive
 
-        // Only 15m, 20m, and 45m standard presets, plus Custom
         val standardPresets: List<StudyPreset>
             get() = listOf(Fifteen, Twenty, FortyFive)
 

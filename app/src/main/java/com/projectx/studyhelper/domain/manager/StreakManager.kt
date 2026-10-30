@@ -17,6 +17,8 @@ class StreakManager(
     val accumulatedMinutesTodayFlow: Flow<Int> = streakRepository.getAccumulatedMinutesTodayFlow()
     val selectedPresetFlow: Flow<StudyPreset> = streakRepository.getSelectedPresetFlow()
     val dailyGoalMinutesFlow: Flow<Int> = streakRepository.getDailyGoalMinutesFlow()
+    val startedSessionsTodayFlow: Flow<Int> = streakRepository.getStartedSessionsTodayFlow()
+    val stoppedSessionsTodayFlow: Flow<Int> = streakRepository.getStoppedSessionsTodayFlow()
 
     /**
      * Evaluates streak continuity on app launch or date rollover.
@@ -55,6 +57,14 @@ class StreakManager(
         }
     }
 
+    suspend fun onSessionStarted() {
+        streakRepository.incrementStartedSessions()
+    }
+
+    suspend fun onSessionAborted() {
+        streakRepository.incrementStoppedSessions()
+    }
+
     /**
      * Processes a newly completed study session, stores it, and increments the streak
      * if the daily accumulated study minutes cross the configurable daily goal threshold.
@@ -73,7 +83,6 @@ class StreakManager(
 
         val totalMinutesToday = streakRepository.getAccumulatedMinutesForDate(sessionDate)
         val dailyGoal = streakRepository.getDailyGoalMinutesFlow().first()
-        // Threshold: daily goal (default 45 min) or the completed preset duration
         val threshold = minOf(dailyGoal, preset.minutes)
         var record = streakRepository.getStreakRecord()
 

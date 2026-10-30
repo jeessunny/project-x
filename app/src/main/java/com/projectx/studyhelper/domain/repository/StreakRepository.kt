@@ -21,5 +21,10 @@ interface StreakRepository {
     fun getDailyGoalMinutesFlow(): Flow<Int>
     suspend fun setDailyGoalMinutes(minutes: Int)
 
+    fun getStartedSessionsTodayFlow(): Flow<Int>
+    fun getStoppedSessionsTodayFlow(): Flow<Int>
+    suspend fun incrementStartedSessions()
+    suspend fun incrementStoppedSessions()
+
     fun getRecentSessionsFlow(): Flow<List<StudySession>>
 }

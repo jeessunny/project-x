@@ -124,6 +124,11 @@ class StudyTimerManager(
             )
         }
 
+        // Track session start
+        scope.launch {
+            streakManager.onSessionStarted()
+        }
+
         timerJob = scope.launch {
             while (_timerState.value.status == TimerStatus.Running) {
                 delay(1000L)
@@ -161,7 +166,7 @@ class StudyTimerManager(
 
     /**
      * Strict Focus Mode: Abandons current session, discards all elapsed time,
-     * and does NOT credit streak.
+     * tracks as stopped midway, and does NOT credit streak.
      */
     fun abortSession() {
         timerJob?.cancel()
@@ -171,6 +176,11 @@ class StudyTimerManager(
                 elapsedSeconds = 0L,
                 currentQuote = ""
             )
+        }
+
+        // Track midway stopped session
+        scope.launch {
+            streakManager.onSessionAborted()
         }
     }
 

@@ -3,9 +3,11 @@ package com.projectx.studyhelper.presentation.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -47,7 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.projectx.studyhelper.domain.model.StudyPreset
 import com.projectx.studyhelper.presentation.theme.ThemeMode
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -226,7 +230,9 @@ fun SettingsScreen(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -275,22 +281,23 @@ fun SettingsScreen(
                         )
                     }
                     Text(
-                        text = "Current Target: ${uiState.dailyGoalMinutes} min / day (Streak triggers upon reaching this limit)",
+                        text = "Current Target: ${uiState.dailyGoalMinutes} min / day (Default: 45m • Triggers streak once reached)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StudyPreset.standardPresets.forEach { preset ->
-                            val isDefault = preset.minutes == 45
                             FilterChip(
                                 selected = uiState.dailyGoalMinutes == preset.minutes,
                                 onClick = { onSetDailyGoalMinutes(preset.minutes) },
-                                label = { Text(if (isDefault) "${preset.label} (Default)" else preset.label) }
+                                label = { Text(preset.label) }
                             )
                         }
 
@@ -421,31 +428,98 @@ fun SettingsScreen(
 
     // Custom Preset Duration Dialog
     if (isCustomPresetDialogOpen) {
-        var minutes by remember { mutableFloatStateOf(uiState.defaultPreset.minutes.toFloat().coerceIn(5f, 120f)) }
+        var minutes by remember { mutableIntStateOf(uiState.defaultPreset.minutes.coerceIn(5, 120)) }
         AlertDialog(
             onDismissRequest = { isCustomPresetDialogOpen = false },
-            title = { Text("Custom Starting Preset") },
+            title = {
+                Text(
+                    text = "Custom Starting Preset",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = "${minutes.toInt()} minutes",
-                        style = MaterialTheme.typography.headlineSmall,
+                        text = "$minutes minutes",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Exact digit quick-adjust buttons (-5m, -1m, +1m, +5m)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FilledTonalButton(
+                            onClick = { minutes = (minutes - 5).coerceIn(5, 120) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("-5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        FilledTonalButton(
+                            onClick = { minutes = (minutes - 1).coerceIn(5, 120) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("-1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        FilledTonalButton(
+                            onClick = { minutes = (minutes + 1).coerceIn(5, 120) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("+1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        FilledTonalButton(
+                            onClick = { minutes = (minutes + 5).coerceIn(5, 120) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("+5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Smooth 1-minute slider
                     Slider(
-                        value = minutes,
-                        onValueChange = { minutes = it },
+                        value = minutes.toFloat(),
+                        onValueChange = { minutes = it.roundToInt().coerceIn(5, 120) },
                         valueRange = 5f..120f,
-                        steps = 22,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Min: 5 min",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Max: 120 min",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(onClick = {
-                    onSetDefaultPreset(StudyPreset.Custom(minutes.toInt()))
+                    onSetDefaultPreset(StudyPreset.Custom(minutes))
                     isCustomPresetDialogOpen = false
                 }) {
                     Text("Save Preset")
@@ -461,34 +535,101 @@ fun SettingsScreen(
 
     // Custom Daily Goal Dialog
     if (isCustomDailyGoalDialogOpen) {
-        var goal by remember { mutableFloatStateOf(uiState.dailyGoalMinutes.toFloat().coerceIn(10f, 240f)) }
+        var goal by remember { mutableIntStateOf(uiState.dailyGoalMinutes.coerceIn(5, 240)) }
         AlertDialog(
             onDismissRequest = { isCustomDailyGoalDialogOpen = false },
-            title = { Text("Custom Daily Study Goal") },
+            title = {
+                Text(
+                    text = "Custom Daily Progress Limit",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = "${goal.toInt()} minutes / day",
-                        style = MaterialTheme.typography.headlineSmall,
+                        text = "$goal minutes / day",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Exact digit quick-adjust buttons (-5m, -1m, +1m, +5m)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FilledTonalButton(
+                            onClick = { goal = (goal - 5).coerceIn(5, 240) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("-5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        FilledTonalButton(
+                            onClick = { goal = (goal - 1).coerceIn(5, 240) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("-1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        FilledTonalButton(
+                            onClick = { goal = (goal + 1).coerceIn(5, 240) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("+1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        FilledTonalButton(
+                            onClick = { goal = (goal + 5).coerceIn(5, 240) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("+5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Smooth 1-minute slider
                     Slider(
-                        value = goal,
-                        onValueChange = { goal = it },
-                        valueRange = 10f..240f,
-                        steps = 46, // 5 min steps
+                        value = goal.toFloat(),
+                        onValueChange = { goal = it.roundToInt().coerceIn(5, 240) },
+                        valueRange = 5f..240f,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Min: 5 min",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Max: 240 min",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(onClick = {
-                    onSetDailyGoalMinutes(goal.toInt())
+                    onSetDailyGoalMinutes(goal)
                     isCustomDailyGoalDialogOpen = false
                 }) {
-                    Text("Set Goal")
+                    Text("Set Limit")
                 }
             },
             dismissButton = {

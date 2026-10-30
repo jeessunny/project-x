@@ -116,17 +116,7 @@ fun UpdateDialog(
                                 fontWeight = FontWeight.Bold
                             )
 
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = info.releaseNotes,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(12.dp)
-                                )
-                            }
+                            CleanReleaseNotesView(rawNotes = info.releaseNotes)
                         }
                     }
 
@@ -263,4 +253,82 @@ fun UpdateDialog(
             }
         }
     )
+}
+
+/**
+ * Clean renderer for GitHub release notes.
+ * Automatically cleans markdown symbols (###, **, *, etc.) and structures
+ * lines cleanly with native Android typography and bullet dots.
+ */
+@Composable
+fun CleanReleaseNotesView(rawNotes: String) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val lines = rawNotes.lines()
+            lines.forEach { rawLine ->
+                val line = rawLine.trim()
+                if (line.isNotBlank()) {
+                    val isHeading = line.startsWith("#")
+                    val isBullet = line.startsWith("- ") || line.startsWith("* ") || line.startsWith("• ")
+
+                    val cleanText = line
+                        .replace(Regex("^#+\\s*"), "") // strip leading ###
+                        .replace("**", "")              // strip bold
+                        .replace("*", "")               // strip italic
+                        .replace("__", "")
+                        .replace("`", "")               // strip code markers
+                        .trim()
+
+                    if (isHeading) {
+                        Text(
+                            text = cleanText,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else if (isBullet) {
+                        val bulletText = if (cleanText.startsWith("- ")) {
+                            cleanText.removePrefix("- ").trim()
+                        } else if (cleanText.startsWith("* ")) {
+                            cleanText.removePrefix("* ").trim()
+                        } else if (cleanText.startsWith("• ")) {
+                            cleanText.removePrefix("• ").trim()
+                        } else {
+                            cleanText
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = "• ",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = bulletText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = cleanText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

@@ -2,8 +2,13 @@ package com.projectx.studyhelper.presentation.study
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -12,6 +17,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,12 +32,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Stop
@@ -43,6 +51,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -53,7 +62,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,6 +73,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import com.projectx.studyhelper.domain.manager.TimerState
 import com.projectx.studyhelper.domain.manager.TimerStatus
 import com.projectx.studyhelper.domain.model.StudyPreset
@@ -191,7 +201,11 @@ fun StudyPresetChipsSection(
     onOpenCustomPicker: () -> Unit,
     isTimerActive: Boolean
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(animationSpec = tween(350, easing = FastOutSlowInEasing))
+    ) {
         Text(
             text = "Focus Preset",
             style = MaterialTheme.typography.titleMedium,
@@ -237,11 +251,15 @@ fun StudyPresetChipsSection(
             )
         }
 
-        // Long Session Fatigue Reminder (for 45m and longer custom sessions)
+        // Long Session Fatigue Reminder (Strictly 46m and longer)
         AnimatedVisibility(
             visible = selectedPreset.isLongSession,
-            enter = fadeIn() + slideInVertically(),
-            exit = fadeOut() + slideOutVertically()
+            enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                animationSpec = tween(350, easing = FastOutSlowInEasing)
+            ),
+            exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
+                animationSpec = tween(350, easing = FastOutSlowInEasing)
+            )
         ) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -281,8 +299,12 @@ fun StudyPresetChipsSection(
         // Contextual 20-20-20 Health Rule Helper Pill (for 20m)
         AnimatedVisibility(
             visible = selectedPreset.isTwentyMinuteRule,
-            enter = fadeIn() + slideInVertically(),
-            exit = fadeOut() + slideOutVertically()
+            enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                animationSpec = tween(350, easing = FastOutSlowInEasing)
+            ),
+            exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
+                animationSpec = tween(350, easing = FastOutSlowInEasing)
+            )
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
@@ -454,42 +476,99 @@ fun CustomDurationDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit
 ) {
-    var selectedMinutes by remember { mutableFloatStateOf(initialMinutes.toFloat().coerceIn(5f, 120f)) }
+    var selectedMinutes by remember { mutableIntStateOf(initialMinutes.coerceIn(5, 120)) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Custom Focus Duration") },
+        title = {
+            Text(
+                text = "Custom Focus Duration",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${selectedMinutes.toInt()} minutes",
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = "$selectedMinutes minutes",
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Exact digit quick-adjust buttons (-5m, -1m, +1m, +5m)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilledTonalButton(
+                        onClick = { selectedMinutes = (selectedMinutes - 5).coerceIn(5, 120) },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("-5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    FilledTonalButton(
+                        onClick = { selectedMinutes = (selectedMinutes - 1).coerceIn(5, 120) },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("-1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    FilledTonalButton(
+                        onClick = { selectedMinutes = (selectedMinutes + 1).coerceIn(5, 120) },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("+1m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    FilledTonalButton(
+                        onClick = { selectedMinutes = (selectedMinutes + 5).coerceIn(5, 120) },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("+5m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Smooth 1-minute slider with accurate bounds
                 Slider(
-                    value = selectedMinutes,
-                    onValueChange = { selectedMinutes = it },
+                    value = selectedMinutes.toFloat(),
+                    onValueChange = { selectedMinutes = it.roundToInt().coerceIn(5, 120) },
                     valueRange = 5f..120f,
-                    steps = 22, // 5 min increments
                     modifier = Modifier.fillMaxWidth()
                 )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("5 min", style = MaterialTheme.typography.labelSmall)
-                    Text("45 min", style = MaterialTheme.typography.labelSmall)
-                    Text("120 min", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = "Min: 5 min",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Max: 120 min",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(selectedMinutes.toInt()) }) {
+            Button(onClick = { onConfirm(selectedMinutes) }) {
                 Text("Set Preset")
             }
         },
