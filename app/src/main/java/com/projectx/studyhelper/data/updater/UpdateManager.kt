@@ -42,9 +42,6 @@ class UpdateManager(
 
         scope.launch {
             _isChecking.value = true
-            if (isManual) {
-                _userFeedbackMessage.emit("Gathering release info & checking for updates...")
-            }
 
             val result = updateChecker.checkForUpdate()
             _isChecking.value = false
@@ -53,20 +50,11 @@ class UpdateManager(
                 if (info != null && info.isUpdateAvailable) {
                     _updateState.value = UpdateState.Available(info)
                     _showDialog.value = true
-                    if (isManual) {
-                        _userFeedbackMessage.emit("New update found: ${info.versionName}")
-                    }
                 } else {
                     _updateState.value = UpdateState.Idle
-                    if (isManual) {
-                        _userFeedbackMessage.emit("You are running the latest version of Project X.")
-                    }
                 }
             }.onFailure { error ->
                 _updateState.value = UpdateState.Error(error.localizedMessage ?: "Failed to check for updates")
-                if (isManual) {
-                    _userFeedbackMessage.emit("Unable to check for updates: ${error.localizedMessage}")
-                }
             }
         }
     }

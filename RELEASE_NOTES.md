@@ -1,17 +1,15 @@
-Project X v1.3.5 Release Notes
+Project X v1.3.6 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Renamed to Glow: Replaced the Pulsing Halo name with a clean and clear title: "Glow".
+• Minimal Material Single Glow: Completely stripped away redundant glow layers, extra beacon flares, and concentric halos. The Glow animation now features a single soft breathing aura cleanly framing the progress stroke, matching pure Material 3 minimalism.
 
-• Single Radiant Glow Ring: Completely removed the triple concentric rings. The timer now features a single unified ring with a soft neon radiance diffusing naturally along the exact same path, finished with an illuminated glowing beacon tip.
+• Zero Toast While Checking Updates: Completely removed all toast notifications when checking for updates. The settings screen remains quiet and distraction-free with only the inline progress indicator.
 
-• Refined Wiggly Wave: Pure oscillating wave progress with no distracting background circle.
+• Material Segmented Indicator: The first element at 12 o'clock always blinks first at session start and during idle readiness.
 
-• Material Segmented Indicator Fix: The first element at 12 o'clock now always blinks first at session start and during idle readiness, resolving the issue where the second element occasionally blinked prematurely.
+• Perfectly Aligned Abandon Dialog: Full-width, balanced layout for Keep Focusing and Abandon Session buttons.
 
-• Streamlined Update Feedback: Removed redundant bottom toast notifications during download and installation, letting the primary download dialog display progress cleanly without popup clutter.
-
-• Perfectly Aligned Abandon Dialog: Restructured the Keep Focusing and Abandon Session buttons into a balanced, full-width layout with clear visual hierarchy, eliminating asymmetric and misaligned button rows.
+• Pure Wiggly Wave: Dynamic fluid wave without background circular obstruction.
 
 • Retained Stability: Offline crash diagnostics screen remains active on an isolated process.

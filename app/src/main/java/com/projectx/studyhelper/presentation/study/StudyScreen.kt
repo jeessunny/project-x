@@ -664,23 +664,23 @@ fun TimerProgressDial(
 
         TimerAnimationStyle.GLOW -> {
             val infiniteTransition = rememberInfiniteTransition(label = "GlowTransition")
-            val glowPhase by infiniteTransition.animateFloat(
-                initialValue = 0f,
-                targetValue = 1f,
+            val glowAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.22f,
+                targetValue = 0.48f,
                 animationSpec = infiniteRepeatable(
                     animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
                     repeatMode = RepeatMode.Reverse
                 ),
-                label = "GlowPhase"
+                label = "GlowAlpha"
             )
 
             Canvas(modifier = modifier) {
                 val centerOffset = Offset(size.width / 2f, size.height / 2f)
                 val strokePx = 11.dp.toPx()
-                val baseRadius = (size.minDimension / 2f) - (strokePx / 2f) - 10.dp.toPx()
+                val baseRadius = (size.minDimension / 2f) - (strokePx / 2f) - 6.dp.toPx()
                 val sweepAngle = (progress * 360f).coerceIn(0f, 360f)
 
-                // 1. Single clean background track at baseRadius
+                // 1. Clean background track
                 drawCircle(
                     color = trackColor,
                     radius = baseRadius,
@@ -688,39 +688,26 @@ fun TimerProgressDial(
                     style = Stroke(width = strokePx, cap = StrokeCap.Round)
                 )
 
-                // 2. Single radiant glowing arc (NO triple rings: exact same baseRadius)
+                // 2. Single minimal Material glow effect around progress arc
                 if (sweepAngle > 0.5f) {
                     val arcTopLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius)
                     val arcSize = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f)
 
-                    // Soft radiant glow diffusion around the single stroke line
+                    // Single soft glow aura layer behind the stroke
                     drawArc(
-                        color = primaryColor.copy(alpha = 0.20f + 0.15f * glowPhase),
+                        color = primaryColor.copy(alpha = glowAlpha),
                         startAngle = -90f,
                         sweepAngle = sweepAngle,
                         useCenter = false,
                         topLeft = arcTopLeft,
                         size = arcSize,
                         style = Stroke(
-                            width = strokePx + 14.dp.toPx() * (0.8f + 0.3f * glowPhase),
+                            width = strokePx + 8.dp.toPx(),
                             cap = StrokeCap.Round
                         )
                     )
 
-                    drawArc(
-                        color = primaryColor.copy(alpha = 0.38f + 0.18f * glowPhase),
-                        startAngle = -90f,
-                        sweepAngle = sweepAngle,
-                        useCenter = false,
-                        topLeft = arcTopLeft,
-                        size = arcSize,
-                        style = Stroke(
-                            width = strokePx + 6.dp.toPx() * (0.85f + 0.25f * glowPhase),
-                            cap = StrokeCap.Round
-                        )
-                    )
-
-                    // Core crisp single progress arc at the exact same baseRadius
+                    // Crisp foreground progress arc
                     drawArc(
                         color = primaryColor,
                         startAngle = -90f,
@@ -729,39 +716,6 @@ fun TimerProgressDial(
                         topLeft = arcTopLeft,
                         size = arcSize,
                         style = Stroke(width = strokePx, cap = StrokeCap.Round)
-                    )
-
-                    // Glowing neon head tip
-                    if (isRunning) {
-                        val headAngleDeg = -90f + sweepAngle
-                        val headAngleRad = Math.toRadians(headAngleDeg.toDouble())
-                        val headX = centerOffset.x + (baseRadius * cos(headAngleRad)).toFloat()
-                        val headY = centerOffset.y + (baseRadius * sin(headAngleRad)).toFloat()
-                        val headOffset = Offset(headX, headY)
-
-                        drawCircle(
-                            color = primaryColor.copy(alpha = 0.45f * (0.6f + 0.4f * glowPhase)),
-                            radius = 9.dp.toPx() + 3.dp.toPx() * glowPhase,
-                            center = headOffset
-                        )
-                        drawCircle(
-                            color = Color.White,
-                            radius = 3.5.dp.toPx(),
-                            center = headOffset
-                        )
-                    }
-                } else if (isRunning || status == TimerStatus.Idle) {
-                    // Soft resting glow beacon at 12 o'clock
-                    val headOffset = Offset(centerOffset.x, centerOffset.y - baseRadius)
-                    drawCircle(
-                        color = primaryColor.copy(alpha = 0.3f * (0.5f + 0.5f * glowPhase)),
-                        radius = 8.dp.toPx(),
-                        center = headOffset
-                    )
-                    drawCircle(
-                        color = primaryColor,
-                        radius = 4.dp.toPx(),
-                        center = headOffset
                     )
                 }
             }
