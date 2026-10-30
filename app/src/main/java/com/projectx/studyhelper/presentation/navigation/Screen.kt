@@ -37,6 +37,9 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavDestinations: List<Screen> = listOf(Study, Sessions, Settings)
+        // Use custom getter to prevent Kotlin class initialization order circular reference
+        // where static INSTANCE of child objects are null during companion object <clinit>.
+        val bottomNavDestinations: List<Screen>
+            get() = listOf(Study, Sessions, Settings)
     }
 }

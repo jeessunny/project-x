@@ -88,7 +88,7 @@ fun AppNavigation(
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer
             ) {
-                Screen.bottomNavDestinations.forEach { screen ->
+                Screen.bottomNavDestinations.filterNotNull().forEach { screen ->
                     val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
                     NavigationBarItem(
                         selected = isSelected,

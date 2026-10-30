@@ -23,10 +23,14 @@ sealed class StudyPreset(val minutes: Int, val label: String) {
     override fun hashCode(): Int = minutes.hashCode()
 
     companion object {
-        val FIFTEEN_MINUTES: StudyPreset = Fifteen
-        val THIRTY_MINUTES: StudyPreset = Thirty
+        val FIFTEEN_MINUTES: StudyPreset
+            get() = Fifteen
 
-        val standardPresets: List<StudyPreset> = listOf(Fifteen, Twenty, Thirty, FortyFive, Sixty)
+        val THIRTY_MINUTES: StudyPreset
+            get() = Thirty
+
+        val standardPresets: List<StudyPreset>
+            get() = listOf(Fifteen, Twenty, Thirty, FortyFive, Sixty)
 
         fun fromMinutes(minutes: Int): StudyPreset {
             return standardPresets.firstOrNull { it.minutes == minutes } ?: Custom(minutes)
