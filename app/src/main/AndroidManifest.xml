@@ -33,6 +33,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Crash Report Activity running in an isolated process so it always renders -->
+        <activity
+            android:name=".CrashReportActivity"
+            android:exported="false"
+            android:process=":crash"
+            android:theme="@style/Theme.ProjectX" />
+
         <!-- Foreground service for persistent timer countdown & motivation -->
         <service
             android:name=".presentation.service.StudyTimerService"

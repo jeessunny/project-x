@@ -1,6 +1,7 @@
 package com.projectx.studyhelper
 
 import android.app.Application
+import android.os.Build
 import android.util.Log
 import com.projectx.studyhelper.data.local.StreakPreferences
 import com.projectx.studyhelper.data.local.StudyDatabase
@@ -79,16 +80,25 @@ class StudyHelperApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // If this is the isolated :crash process, do not run app initialization
+        val isCrashProcess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getProcessName().endsWith(":crash")
+        } else {
+            false
+        }
+        if (isCrashProcess) {
+            return
+        }
+
         installCrashLogger()
-        Log.d(TAG, "Application created — dependencies are lazily initialized")
+        Log.d(TAG, "Application created — crash handler active, dependencies lazy")
     }
 
     /**
-     * Writes the full crash stack trace to EXTERNAL storage so it can be
-     * read from Termux without root after running `termux-setup-storage`.
-     *
-     * Path: /sdcard/Android/data/com.projectx.studyhelper/files/crash_log.txt
-     * Read with: cat ~/storage/shared/Android/data/com.projectx.studyhelper/files/crash_log.txt
+     * Intercepts uncaught exceptions and immediately opens the dedicated
+     * CrashReportActivity in an isolated process. This guarantees that users
+     * see the exact error on screen instead of a generic "has stopped" dialog.
      */
     private fun installCrashLogger() {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
@@ -101,39 +111,34 @@ class StudyHelperApplication : Application() {
 
                 val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 val logEntry = buildString {
-                    appendLine("=== CRASH REPORT ===")
+                    appendLine("=== PROJECT X CRASH REPORT ===")
                     appendLine("Timestamp : $timestamp")
+                    appendLine("Device    : ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})")
                     appendLine("Thread    : ${thread.name}")
                     appendLine("Exception : ${throwable.javaClass.name}")
                     appendLine("Message   : ${throwable.message}")
                     appendLine("--- Stack Trace ---")
                     appendLine(stackTrace)
-                    appendLine("===================")
-                    appendLine()
+                    appendLine("==============================")
                 }
 
                 Log.e(TAG, logEntry)
 
-                // Write to EXTERNAL app-specific storage (readable via Termux after
-                // running: termux-setup-storage)
-                // Path: ~/storage/shared/Android/data/com.projectx.studyhelper/files/crash_log.txt
-                val externalDir: File? = getExternalFilesDir(null)
-                if (externalDir != null) {
-                    externalDir.mkdirs()
-                    val externalCrashFile = File(externalDir, "crash_log.txt")
-                    externalCrashFile.appendText(logEntry)
-                    Log.e(TAG, "Crash written to: ${externalCrashFile.absolutePath}")
-                }
+                // Launch crash diagnostic screen
+                val intent = CrashReportActivity.createIntent(this, logEntry)
+                startActivity(intent)
 
-                // Also attempt internal storage as fallback
+                // Also save to internal files
                 try {
-                    val internalCrashFile = File(filesDir, "crash_log.txt")
-                    internalCrashFile.appendText(logEntry)
+                    File(filesDir, "crash_log.txt").writeText(logEntry)
                 } catch (_: Exception) {}
 
+                // Terminate the crashed process so the crash activity can take over cleanly
+                android.os.Process.killProcess(android.os.Process.myPid())
+                System.exit(10)
+
             } catch (e: Exception) {
-                Log.e(TAG, "Crash logger itself failed: ${e.message}")
-            } finally {
+                Log.e(TAG, "Crash handler failed: ${e.message}")
                 defaultHandler?.uncaughtException(thread, throwable)
             }
         }

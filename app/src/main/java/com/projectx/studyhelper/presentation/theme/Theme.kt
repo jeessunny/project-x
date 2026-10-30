@@ -2,6 +2,7 @@ package com.projectx.studyhelper.presentation.theme
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -81,9 +82,20 @@ fun StudyHelperTheme(
         ThemeMode.DARK -> true
     }
 
+    // Transsion (Tecno/Infinix/itel) OEM ROMs often crash inside dynamic color extraction
+    val isTranssionOem = Build.MANUFACTURER.contains("TECNO", ignoreCase = true) ||
+            Build.MANUFACTURER.contains("Infinix", ignoreCase = true) ||
+            Build.MANUFACTURER.contains("itel", ignoreCase = true) ||
+            Build.MANUFACTURER.contains("Transsion", ignoreCase = true)
+
     val baseColorScheme: ColorScheme = when {
-        themeConfig.useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        themeConfig.useDynamicColor && !isTranssionOem && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            try {
+                if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            } catch (e: Throwable) {
+                Log.w("StudyHelperTheme", "Dynamic color extraction failed, falling back to static palette", e)
+                if (isDark) PurpleDarkColorScheme else PurpleLightColorScheme
+            }
         }
         isDark -> PurpleDarkColorScheme
         else -> PurpleLightColorScheme
@@ -107,10 +119,14 @@ fun StudyHelperTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as? Activity)?.window ?: return@SideEffect
-            WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !isDark
-                isAppearanceLightNavigationBars = !isDark
+            try {
+                val window = (view.context as? Activity)?.window ?: return@SideEffect
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !isDark
+                    isAppearanceLightNavigationBars = !isDark
+                }
+            } catch (e: Throwable) {
+                Log.w("StudyHelperTheme", "Insets controller setup skipped: ${e.message}")
             }
         }
     }
