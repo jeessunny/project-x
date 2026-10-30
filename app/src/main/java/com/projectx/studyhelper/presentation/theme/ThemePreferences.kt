@@ -25,10 +25,10 @@ enum class AppColorTheme(
     val displayName: String,
     val previewColor: Color
 ) {
+    STUDYIO("studyio", "Studyio", studyio_light_primary),
     PURPLE("purple", "Violet", md_purple_light_primary),
     BLUE("blue", "Ocean", md_blue_light_primary),
     GREEN("green", "Emerald", md_green_light_primary),
-    ORANGE("orange", "Sunset", md_orange_light_primary),
     ROSE("rose", "Rose", md_rose_light_primary)
 }
 
@@ -46,8 +46,8 @@ enum class TimerAnimationStyle(
 data class ThemeConfig(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val amoledBlack: Boolean = false,
-    val useDynamicColor: Boolean = true,
-    val colorTheme: AppColorTheme = AppColorTheme.PURPLE,
+    val useDynamicColor: Boolean = false,
+    val colorTheme: AppColorTheme = AppColorTheme.STUDYIO,
     val timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT
 )
 
@@ -79,13 +79,17 @@ class ThemePreferences(private val context: Context) {
                 ThemeMode.SYSTEM
             }
             val amoledBlack = prefs[Keys.AMOLED_BLACK] ?: false
-            val useDynamicColor = prefs[Keys.USE_DYNAMIC_COLOR] ?: true
+            val useDynamicColor = prefs[Keys.USE_DYNAMIC_COLOR] ?: false
 
-            val colorThemeString = prefs[Keys.COLOR_THEME] ?: AppColorTheme.PURPLE.name
+            val colorThemeString = prefs[Keys.COLOR_THEME] ?: AppColorTheme.STUDYIO.name
             val colorTheme = try {
-                AppColorTheme.valueOf(colorThemeString)
+                if (colorThemeString == "ORANGE" || colorThemeString == "orange") {
+                    AppColorTheme.STUDYIO
+                } else {
+                    AppColorTheme.valueOf(colorThemeString)
+                }
             } catch (e: Exception) {
-                AppColorTheme.PURPLE
+                AppColorTheme.STUDYIO
             }
 
             val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.DEFAULT.name
@@ -112,12 +116,25 @@ class ThemePreferences(private val context: Context) {
         context.themeDataStore.edit { prefs ->
             prefs[Keys.THEME_MODE] = mode.name
         }
+        updateQuickCache(mode = mode)
     }
 
     suspend fun setAmoledBlack(enabled: Boolean) {
         context.themeDataStore.edit { prefs ->
             prefs[Keys.AMOLED_BLACK] = enabled
         }
+        updateQuickCache(amoled = enabled)
+    }
+
+    private fun updateQuickCache(mode: ThemeMode? = null, amoled: Boolean? = null) {
+        try {
+            val prefs = context.getSharedPreferences("theme_quick_cache", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                mode?.let { putString("theme_mode", it.name) }
+                amoled?.let { putBoolean("amoled_black", it) }
+                apply()
+            }
+        } catch (_: Exception) {}
     }
 
     suspend fun setUseDynamicColor(enabled: Boolean) {

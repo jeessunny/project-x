@@ -1,15 +1,15 @@
-Studyio v1.3.7 Release Notes
+Studyio v1.3.8 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Brand Identity — Studyio: Officially renamed the application to Studyio across the entire app, navigation bars, system launcher label, self-updater, and diagnostic crash screens.
+• Official Studyio Brand Theme: Replaced the Sunset palette with the official Studyio Brand Theme (Vibrant Red #FB2824, Orange #FD7E1C, Golden Yellow #FECE2A) derived from the Studyio Brand Color System. Studyio is now the default theme across the app on launch.
 
-• Official App Icon: Installed the brand-new Studyio adaptive launcher icon from the brand package across all screen density buckets (mdpi through xxxhdpi) with custom adaptive vector foreground and background styling.
+• Fixed Splash Screen in Dark & AMOLED Modes: Eliminated the bug where the launch screen with the app logo opened with a white background in dark mode. The starting splash screen and activity window background now automatically adapt to Dark Mode (#141011) and Pure Black AMOLED Mode (#000000), updating instantly whenever the user switches themes.
 
-• Persistent Custom Starting Preset: Resolved the bug where custom focus countdown durations would reset back to 15m upon app closure. Custom starting presets are now fully persisted in DataStore and automatically restored to the focus timer on every app launch.
+• Persistent Custom Starting Preset: Custom focus countdown durations remain saved and restored across app closures.
+
+• Official App Icon: High-resolution adaptive Studyio launcher icon.
 
 • Minimal Material Single Glow: Subtle single breathing glow aura framing the focus progress arc.
-
-• Zero Toast While Checking Updates: Distraction-free update checking with inline progress indicator.
 
 • Retained Stability: Offline crash diagnostics screen remains active on an isolated process.

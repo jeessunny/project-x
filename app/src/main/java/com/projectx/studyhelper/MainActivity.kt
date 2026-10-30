@@ -1,5 +1,6 @@
 package com.projectx.studyhelper
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -50,6 +51,26 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        try {
+            val quickPrefs = getSharedPreferences("theme_quick_cache", MODE_PRIVATE)
+            val isAmoled = quickPrefs.getBoolean("amoled_black", false)
+            val mode = quickPrefs.getString("theme_mode", "SYSTEM")
+            val isSystemDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            val isDark = when (mode) {
+                "DARK" -> true
+                "LIGHT" -> false
+                else -> isSystemDark
+            }
+            val targetTheme = when {
+                isDark && isAmoled -> R.style.Theme_Studyio_Amoled
+                isDark -> R.style.Theme_Studyio_Dark
+                else -> R.style.Theme_Studyio_Light
+            }
+            setTheme(targetTheme)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Window theme setup fallback: ${e.message}")
+        }
+
         super.onCreate(savedInstanceState)
 
         try {
