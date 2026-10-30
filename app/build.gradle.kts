@@ -17,8 +17,8 @@ android {
         applicationId = "com.projectx.studyhelper"
         minSdk = 26
         targetSdk = 35
-        versionCode = 22
-        versionName = "1.4.0"
+        versionCode = 23
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -84,7 +84,8 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.ui.text.ExperimentalTextApi"
         )
     }
 
