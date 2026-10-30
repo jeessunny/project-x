@@ -522,31 +522,26 @@ fun TimerProgressDial(
                 initialValue = 0f,
                 targetValue = (2 * PI).toFloat(),
                 animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 2000, easing = LinearEasing),
+                    animation = tween(durationMillis = 1900, easing = LinearEasing),
                     repeatMode = RepeatMode.Restart
                 ),
                 label = "WavePhase"
             )
 
             Canvas(modifier = modifier) {
-                val strokePx = 11.dp.toPx()
+                val strokePx = 10.dp.toPx()
                 val radius = (size.minDimension / 2f) - (strokePx / 2f) - 6.dp.toPx()
                 val centerOffset = Offset(size.width / 2f, size.height / 2f)
 
-                // Background track
-                drawCircle(
-                    color = trackColor,
-                    radius = radius,
-                    center = centerOffset,
-                    style = Stroke(width = strokePx, cap = StrokeCap.Round)
-                )
+                // NO BACKGROUND CIRCLE DRAWN (as requested)
 
-                // Foreground wavy path
-                if (progress > 0.005f) {
-                    val sweepAngle = (progress * 360f).coerceIn(0f, 360f)
-                    val steps = (sweepAngle * 2.5f).toInt().coerceAtLeast(15)
-                    val waveFreq = 14f // Number of wave crests around full dial
-                    val amplitude = if (isRunning) 5.5.dp.toPx() else 3.5.dp.toPx()
+                val isIdle = status == TimerStatus.Idle && progress <= 0.005f
+                val sweepAngle = if (isIdle) 360f else (progress * 360f).coerceIn(0f, 360f)
+
+                if (sweepAngle > 0.5f) {
+                    val steps = (sweepAngle * 2.5f).toInt().coerceAtLeast(24)
+                    val waveFreq = 14f // Natural wave frequency around circle
+                    val amplitude = if (isRunning) 6.dp.toPx() else 3.5.dp.toPx()
                     val path = Path()
 
                     for (i in 0..steps) {
@@ -566,9 +561,10 @@ fun TimerProgressDial(
                         }
                     }
 
+                    val waveColor = if (isIdle) primaryColor.copy(alpha = 0.35f) else primaryColor
                     drawPath(
                         path = path,
-                        color = primaryColor,
+                        color = waveColor,
                         style = Stroke(
                             width = strokePx,
                             cap = StrokeCap.Round,
@@ -645,51 +641,119 @@ fun TimerProgressDial(
 
         TimerAnimationStyle.PULSING_GLOW -> {
             val infiniteTransition = rememberInfiniteTransition(label = "PulsingHaloTransition")
-            val haloAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.15f,
-                targetValue = 0.6f,
+            val pulsePhase by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 1500, easing = LinearEasing),
+                    animation = tween(durationMillis = 1600, easing = FastOutSlowInEasing),
                     repeatMode = RepeatMode.Reverse
                 ),
-                label = "HaloAlpha"
-            )
-            val haloExtraStroke by infiniteTransition.animateFloat(
-                initialValue = 4.dp.value,
-                targetValue = 14.dp.value,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 1500, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "HaloExpansion"
+                label = "PulsePhase"
             )
 
-            Box(contentAlignment = Alignment.Center, modifier = modifier) {
-                // Background Track
-                CircularProgressIndicator(
-                    progress = { 1f },
-                    modifier = modifier,
+            Canvas(modifier = modifier) {
+                val centerOffset = Offset(size.width / 2f, size.height / 2f)
+                val strokePx = 11.dp.toPx()
+                val baseRadius = (size.minDimension / 2f) - (strokePx / 2f) - 12.dp.toPx()
+                val sweepAngle = (progress * 360f).coerceIn(0f, 360f)
+
+                // 1. Base clean background track
+                drawCircle(
                     color = trackColor,
-                    strokeWidth = 12.dp
+                    radius = baseRadius,
+                    center = centerOffset,
+                    style = Stroke(width = strokePx, cap = StrokeCap.Round)
                 )
 
-                // Pulsing Halo Glow (Only active while running)
-                if (isRunning && progress > 0.005f) {
-                    CircularProgressIndicator(
-                        progress = { progress },
-                        modifier = modifier,
-                        color = primaryColor.copy(alpha = haloAlpha),
-                        strokeWidth = (12.dp + haloExtraStroke.dp)
+                // 2. Outward radiating breathing neon halo layers
+                if (sweepAngle > 0.5f) {
+                    // Layer 3: Outer softest aura
+                    val r3 = baseRadius + 10.dp.toPx() * pulsePhase
+                    drawArc(
+                        color = primaryColor.copy(alpha = 0.10f * (0.4f + 0.6f * pulsePhase)),
+                        startAngle = -90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        topLeft = Offset(centerOffset.x - r3, centerOffset.y - r3),
+                        size = androidx.compose.ui.geometry.Size(r3 * 2f, r3 * 2f),
+                        style = Stroke(width = strokePx + 14.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // Layer 2: Medium glow aura
+                    val r2 = baseRadius + 4.dp.toPx() * pulsePhase
+                    drawArc(
+                        color = primaryColor.copy(alpha = 0.22f * (0.5f + 0.5f * pulsePhase)),
+                        startAngle = -90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        topLeft = Offset(centerOffset.x - r2, centerOffset.y - r2),
+                        size = androidx.compose.ui.geometry.Size(r2 * 2f, r2 * 2f),
+                        style = Stroke(width = strokePx + 8.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // Layer 1: Close intense glow
+                    drawArc(
+                        color = primaryColor.copy(alpha = 0.35f * (0.6f + 0.4f * pulsePhase)),
+                        startAngle = -90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        topLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius),
+                        size = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f),
+                        style = Stroke(width = strokePx + 4.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // 3. Crisp solid foreground progress arc
+                    drawArc(
+                        color = primaryColor,
+                        startAngle = -90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        topLeft = Offset(centerOffset.x - baseRadius, centerOffset.y - baseRadius),
+                        size = androidx.compose.ui.geometry.Size(baseRadius * 2f, baseRadius * 2f),
+                        style = Stroke(width = strokePx, cap = StrokeCap.Round)
+                    )
+
+                    // 4. Glowing beacon flare at the active progress head
+                    if (isRunning) {
+                        val headAngleDeg = -90f + sweepAngle
+                        val headAngleRad = Math.toRadians(headAngleDeg.toDouble())
+                        val headX = centerOffset.x + (baseRadius * cos(headAngleRad)).toFloat()
+                        val headY = centerOffset.y + (baseRadius * sin(headAngleRad)).toFloat()
+                        val headOffset = Offset(headX, headY)
+
+                        // Outer beacon flare
+                        drawCircle(
+                            color = primaryColor.copy(alpha = 0.35f * pulsePhase),
+                            radius = 12.dp.toPx() + 6.dp.toPx() * pulsePhase,
+                            center = headOffset
+                        )
+                        // Middle glow
+                        drawCircle(
+                            color = primaryColor.copy(alpha = 0.8f),
+                            radius = 6.dp.toPx(),
+                            center = headOffset
+                        )
+                        // White brilliant core
+                        drawCircle(
+                            color = Color.White,
+                            radius = 3.dp.toPx(),
+                            center = headOffset
+                        )
+                    }
+                } else if (isRunning || status == TimerStatus.Idle) {
+                    // Subtle ambient beacon at 12 o'clock when ready or at zero progress
+                    val headOffset = Offset(centerOffset.x, centerOffset.y - baseRadius)
+                    drawCircle(
+                        color = primaryColor.copy(alpha = 0.25f * pulsePhase),
+                        radius = 8.dp.toPx() + 4.dp.toPx() * pulsePhase,
+                        center = headOffset
+                    )
+                    drawCircle(
+                        color = primaryColor.copy(alpha = 0.6f),
+                        radius = 4.dp.toPx(),
+                        center = headOffset
                     )
                 }
-
-                // Sharp Foreground Progress Arc
-                CircularProgressIndicator(
-                    progress = { progress },
-                    modifier = modifier,
-                    color = primaryColor,
-                    strokeWidth = 12.dp
-                )
             }
         }
     }
