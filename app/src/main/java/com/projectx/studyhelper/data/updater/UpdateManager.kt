@@ -51,10 +51,18 @@ class UpdateManager(
                     _updateState.value = UpdateState.Available(info)
                     _showDialog.value = true
                 } else {
-                    _updateState.value = UpdateState.Idle
+                    if (isManual) {
+                        _updateState.value = UpdateState.UpToDate(com.projectx.studyhelper.BuildConfig.VERSION_NAME)
+                        _showDialog.value = true
+                    } else {
+                        _updateState.value = UpdateState.Idle
+                    }
                 }
             }.onFailure { error ->
                 _updateState.value = UpdateState.Error(error.localizedMessage ?: "Failed to check for updates")
+                if (isManual) {
+                    _showDialog.value = true
+                }
             }
         }
     }
@@ -65,6 +73,9 @@ class UpdateManager(
 
     fun dismissDialog() {
         _showDialog.value = false
+        if (_updateState.value is UpdateState.UpToDate || _updateState.value is UpdateState.Error) {
+            _updateState.value = UpdateState.Idle
+        }
     }
 
     /**

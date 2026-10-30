@@ -14,5 +14,6 @@ sealed interface UpdateState {
     data class Available(val updateInfo: UpdateInfo) : UpdateState
     data class Downloading(val progressPercent: Int, val downloadedBytes: Long, val totalBytes: Long) : UpdateState
     data class ReadyToInstall(val updateInfo: UpdateInfo) : UpdateState
+    data class UpToDate(val currentVersion: String) : UpdateState
     data class Error(val message: String) : UpdateState
 }

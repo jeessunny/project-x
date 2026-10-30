@@ -177,57 +177,57 @@ private val GreenDarkColorScheme = darkColorScheme(
     outline = md_green_dark_outline
 )
 
-// 4. Studyio Brand Palette
-private val StudyioLightColorScheme = lightColorScheme(
-    primary = studyio_light_primary,
-    onPrimary = studyio_light_onPrimary,
-    primaryContainer = studyio_light_primaryContainer,
-    onPrimaryContainer = studyio_light_onPrimaryContainer,
-    secondary = studyio_light_secondary,
-    onSecondary = studyio_light_onSecondary,
-    secondaryContainer = studyio_light_secondaryContainer,
-    onSecondaryContainer = studyio_light_onSecondaryContainer,
-    tertiary = studyio_light_tertiary,
-    onTertiary = studyio_light_onTertiary,
-    tertiaryContainer = studyio_light_tertiaryContainer,
-    onTertiaryContainer = studyio_light_onTertiaryContainer,
+// 4. Nordic Teal Palette
+private val TealLightColorScheme = lightColorScheme(
+    primary = md_teal_light_primary,
+    onPrimary = md_teal_light_onPrimary,
+    primaryContainer = md_teal_light_primaryContainer,
+    onPrimaryContainer = md_teal_light_onPrimaryContainer,
+    secondary = md_teal_light_secondary,
+    onSecondary = md_teal_light_onSecondary,
+    secondaryContainer = md_teal_light_secondaryContainer,
+    onSecondaryContainer = md_teal_light_onSecondaryContainer,
+    tertiary = md_teal_light_tertiary,
+    onTertiary = md_teal_light_onTertiary,
+    tertiaryContainer = md_teal_light_tertiaryContainer,
+    onTertiaryContainer = md_teal_light_onTertiaryContainer,
     error = md_theme_error,
     errorContainer = md_theme_errorContainer,
     onError = md_theme_onError,
     onErrorContainer = md_theme_onErrorContainer,
-    background = studyio_light_background,
-    onBackground = studyio_light_onBackground,
-    surface = studyio_light_surface,
-    onSurface = studyio_light_onSurface,
-    surfaceVariant = studyio_light_surfaceVariant,
-    onSurfaceVariant = studyio_light_onSurfaceVariant,
-    outline = studyio_light_outline
+    background = md_teal_light_background,
+    onBackground = md_teal_light_onBackground,
+    surface = md_teal_light_surface,
+    onSurface = md_teal_light_onSurface,
+    surfaceVariant = md_teal_light_surfaceVariant,
+    onSurfaceVariant = md_teal_light_onSurfaceVariant,
+    outline = md_teal_light_outline
 )
 
-private val StudyioDarkColorScheme = darkColorScheme(
-    primary = studyio_dark_primary,
-    onPrimary = studyio_dark_onPrimary,
-    primaryContainer = studyio_dark_primaryContainer,
-    onPrimaryContainer = studyio_dark_onPrimaryContainer,
-    secondary = studyio_dark_secondary,
-    onSecondary = studyio_dark_onSecondary,
-    secondaryContainer = studyio_dark_secondaryContainer,
-    onSecondaryContainer = studyio_dark_onSecondaryContainer,
-    tertiary = studyio_dark_tertiary,
-    onTertiary = studyio_dark_onTertiary,
-    tertiaryContainer = studyio_dark_tertiaryContainer,
-    onTertiaryContainer = studyio_dark_onTertiaryContainer,
+private val TealDarkColorScheme = darkColorScheme(
+    primary = md_teal_dark_primary,
+    onPrimary = md_teal_dark_onPrimary,
+    primaryContainer = md_teal_dark_primaryContainer,
+    onPrimaryContainer = md_teal_dark_onPrimaryContainer,
+    secondary = md_teal_dark_secondary,
+    onSecondary = md_teal_dark_onSecondary,
+    secondaryContainer = md_teal_dark_secondaryContainer,
+    onSecondaryContainer = md_teal_dark_onSecondaryContainer,
+    tertiary = md_teal_dark_tertiary,
+    onTertiary = md_teal_dark_onTertiary,
+    tertiaryContainer = md_teal_dark_tertiaryContainer,
+    onTertiaryContainer = md_teal_dark_onTertiaryContainer,
     error = md_theme_dark_error,
     errorContainer = md_theme_dark_errorContainer,
     onError = md_theme_dark_onError,
     onErrorContainer = md_theme_dark_onErrorContainer,
-    background = studyio_dark_background,
-    onBackground = studyio_dark_onBackground,
-    surface = studyio_dark_surface,
-    onSurface = studyio_dark_onSurface,
-    surfaceVariant = studyio_dark_surfaceVariant,
-    onSurfaceVariant = studyio_dark_onSurfaceVariant,
-    outline = studyio_dark_outline
+    background = md_teal_dark_background,
+    onBackground = md_teal_dark_onBackground,
+    surface = md_teal_dark_surface,
+    onSurface = md_teal_dark_onSurface,
+    surfaceVariant = md_teal_dark_surfaceVariant,
+    onSurfaceVariant = md_teal_dark_onSurfaceVariant,
+    outline = md_teal_dark_outline
 )
 
 // 5. Rose Pink Palette
@@ -285,10 +285,10 @@ private val RoseDarkColorScheme = darkColorScheme(
 
 private fun getStaticColorScheme(colorTheme: AppColorTheme, isDark: Boolean): ColorScheme {
     return when (colorTheme) {
-        AppColorTheme.STUDYIO -> if (isDark) StudyioDarkColorScheme else StudyioLightColorScheme
         AppColorTheme.PURPLE -> if (isDark) PurpleDarkColorScheme else PurpleLightColorScheme
         AppColorTheme.BLUE -> if (isDark) BlueDarkColorScheme else BlueLightColorScheme
         AppColorTheme.GREEN -> if (isDark) GreenDarkColorScheme else GreenLightColorScheme
+        AppColorTheme.TEAL -> if (isDark) TealDarkColorScheme else TealLightColorScheme
         AppColorTheme.ROSE -> if (isDark) RoseDarkColorScheme else RoseLightColorScheme
     }
 }

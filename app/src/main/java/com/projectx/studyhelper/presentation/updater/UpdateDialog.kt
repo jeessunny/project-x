@@ -57,6 +57,7 @@ fun UpdateDialog(
             val icon = when (updateState) {
                 is UpdateState.Downloading -> Icons.Default.CloudDownload
                 is UpdateState.ReadyToInstall -> Icons.Default.InstallMobile
+                is UpdateState.UpToDate -> Icons.Default.CheckCircle
                 is UpdateState.Error -> Icons.Default.ErrorOutline
                 else -> Icons.Default.SystemUpdate
             }
@@ -72,6 +73,7 @@ fun UpdateDialog(
                 is UpdateState.Available -> "Update Available (${updateState.updateInfo.versionName})"
                 is UpdateState.Downloading -> "Downloading Update"
                 is UpdateState.ReadyToInstall -> "Download Complete"
+                is UpdateState.UpToDate -> "You're Up to Date"
                 is UpdateState.Error -> "Update Failed"
                 else -> "Studyio Update"
             }
@@ -204,6 +206,53 @@ fun UpdateDialog(
                         }
                     }
 
+                    is UpdateState.UpToDate -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "Installed Version: v${state.currentVersion.removePrefix("v")}",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Studyio is on the latest release",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = "You are currently running the latest version of Studyio. All new features, performance improvements, and bug fixes are active.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
                     is UpdateState.Error -> {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -235,6 +284,11 @@ fun UpdateDialog(
                         Icon(Icons.Default.InstallMobile, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Install Now")
+                    }
+                }
+                is UpdateState.UpToDate -> {
+                    Button(onClick = onDismiss) {
+                        Text("Got It")
                     }
                 }
                 is UpdateState.Error -> {

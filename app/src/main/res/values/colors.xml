@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="studyio_window_bg_light">#FFFAF7</color>
-    <color name="studyio_window_bg_dark">#141011</color>
+    <color name="studyio_window_bg_light">#FFFBFE</color>
+    <color name="studyio_window_bg_dark">#1C1B1F</color>
     <color name="studyio_window_bg_amoled">#000000</color>
 </resources>

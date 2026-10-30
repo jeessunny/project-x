@@ -25,10 +25,10 @@ enum class AppColorTheme(
     val displayName: String,
     val previewColor: Color
 ) {
-    STUDYIO("studyio", "Studyio", studyio_light_primary),
     PURPLE("purple", "Violet", md_purple_light_primary),
     BLUE("blue", "Ocean", md_blue_light_primary),
     GREEN("green", "Emerald", md_green_light_primary),
+    TEAL("teal", "Teal", md_teal_light_primary),
     ROSE("rose", "Rose", md_rose_light_primary)
 }
 
@@ -46,8 +46,8 @@ enum class TimerAnimationStyle(
 data class ThemeConfig(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val amoledBlack: Boolean = false,
-    val useDynamicColor: Boolean = false,
-    val colorTheme: AppColorTheme = AppColorTheme.STUDYIO,
+    val useDynamicColor: Boolean = true,
+    val colorTheme: AppColorTheme = AppColorTheme.PURPLE,
     val timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT
 )
 
@@ -79,17 +79,16 @@ class ThemePreferences(private val context: Context) {
                 ThemeMode.SYSTEM
             }
             val amoledBlack = prefs[Keys.AMOLED_BLACK] ?: false
-            val useDynamicColor = prefs[Keys.USE_DYNAMIC_COLOR] ?: false
+            val useDynamicColor = prefs[Keys.USE_DYNAMIC_COLOR] ?: true
 
-            val colorThemeString = prefs[Keys.COLOR_THEME] ?: AppColorTheme.STUDYIO.name
+            val colorThemeString = prefs[Keys.COLOR_THEME] ?: AppColorTheme.PURPLE.name
             val colorTheme = try {
-                if (colorThemeString == "ORANGE" || colorThemeString == "orange") {
-                    AppColorTheme.STUDYIO
-                } else {
-                    AppColorTheme.valueOf(colorThemeString)
+                when (colorThemeString) {
+                    "STUDYIO", "studyio", "ORANGE", "orange" -> AppColorTheme.PURPLE
+                    else -> AppColorTheme.valueOf(colorThemeString)
                 }
             } catch (e: Exception) {
-                AppColorTheme.STUDYIO
+                AppColorTheme.PURPLE
             }
 
             val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.DEFAULT.name

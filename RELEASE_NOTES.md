@@ -1,10 +1,14 @@
-Studyio v1.3.8 Release Notes
+Studyio v1.3.9 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Official Studyio Brand Theme: Replaced the Sunset palette with the official Studyio Brand Theme (Vibrant Red #FB2824, Orange #FD7E1C, Golden Yellow #FECE2A) derived from the Studyio Brand Color System. Studyio is now the default theme across the app on launch.
+• Nordic Teal Theme Palette: Replaced the previous prebuilt theme with a calm Nordic Teal Material 3 color system (Teal #006A6A, Mint Container #70F7F7, Muted Sage).
 
-• Fixed Splash Screen in Dark & AMOLED Modes: Eliminated the bug where the launch screen with the app logo opened with a white background in dark mode. The starting splash screen and activity window background now automatically adapt to Dark Mode (#141011) and Pure Black AMOLED Mode (#000000), updating instantly whenever the user switches themes.
+• Dynamic Theme on Launch: Studyio now defaults to Android Dynamic Wallpaper Color (Monet) on launch. If dynamic color is not supported by the device, it automatically falls back to the refined Violet palette.
+
+• System Default Theme Mode: The theme mode selector now defaults to System mode to effortlessly follow device settings.
+
+• Up-To-Date Update Dialog: Checking for updates when already on the latest release now presents a clean native information dialog showing current installed version details, perfectly styled with the update screen experience.
 
 • Persistent Custom Starting Preset: Custom focus countdown durations remain saved and restored across app closures.
 
