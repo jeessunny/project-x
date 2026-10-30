@@ -12,6 +12,12 @@ import com.projectx.studyhelper.domain.manager.StreakManager
 import com.projectx.studyhelper.domain.manager.StudyTimerManager
 import com.projectx.studyhelper.domain.repository.StreakRepository
 import com.projectx.studyhelper.presentation.theme.ThemePreferences
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class StudyHelperApplication : Application() {
 
@@ -19,8 +25,10 @@ class StudyHelperApplication : Application() {
         private const val TAG = "StudyHelperApp"
     }
 
-    // Lazy initialization — nothing is built until first access.
-    // This ensures Application.onCreate() returns instantly and never crashes the process.
+    // ── Lazy dependency graph ─────────────────────────────────────────────────
+    // Nothing is constructed until first access. Application.onCreate() is empty
+    // so a failing dependency CANNOT kill the process before the UI even renders.
+
     val database: StudyDatabase by lazy {
         Log.d(TAG, "Initializing Room database")
         StudyDatabase.getInstance(this)
@@ -72,10 +80,43 @@ class StudyHelperApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Application.onCreate() is intentionally left minimal.
-        // All dependencies are initialized lazily on first access in MainActivity/ViewModels.
-        // This prevents ANY crash in Application.onCreate() from killing the process before
-        // the UI can even render.
-        Log.d(TAG, "Application.onCreate() complete — dependencies are lazily initialized")
+        installCrashLogger()
+        Log.d(TAG, "Application.onCreate() — all dependencies are lazily initialized")
+    }
+
+    /**
+     * Writes the full stack trace to a file in the app's files directory
+     * so it can be retrieved even without ADB. File: /data/data/.../files/crash_log.txt
+     */
+    private fun installCrashLogger() {
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                val sw = StringWriter()
+                throwable.printStackTrace(PrintWriter(sw))
+                val stackTrace = sw.toString()
+
+                val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+                val logEntry = buildString {
+                    appendLine("=== CRASH REPORT ===")
+                    appendLine("Timestamp : $timestamp")
+                    appendLine("Thread    : ${thread.name}")
+                    appendLine("Exception : ${throwable.javaClass.name}")
+                    appendLine("Message   : ${throwable.message}")
+                    appendLine("--- Stack Trace ---")
+                    appendLine(stackTrace)
+                    appendLine("===================")
+                }
+
+                Log.e(TAG, logEntry)
+
+                val crashFile = File(filesDir, "crash_log.txt")
+                crashFile.appendText(logEntry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Crash logger itself failed: ${e.message}")
+            } finally {
+                defaultHandler?.uncaughtException(thread, throwable)
+            }
+        }
     }
 }

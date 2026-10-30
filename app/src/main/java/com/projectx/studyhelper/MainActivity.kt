@@ -45,14 +45,22 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // super.onCreate() MUST be called BEFORE enableEdgeToEdge().
+        // Calling enableEdgeToEdge() before super.onCreate() throws
+        // IllegalStateException on Android 14+ because the Window is not
+        // yet attached to the Activity at that point.
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         val app = application as StudyHelperApplication
 
-        // Non-blocking background update check via lifecycleScope IO
+        // Non-blocking background update check
         lifecycleScope.launch(Dispatchers.IO) {
-            app.updateManager.checkForUpdates(isManual = false)
+            try {
+                app.updateManager.checkForUpdates(isManual = false)
+            } catch (e: Exception) {
+                android.util.Log.w("MainActivity", "Update check failed (non-fatal): ${e.message}")
+            }
         }
 
         setContent {
