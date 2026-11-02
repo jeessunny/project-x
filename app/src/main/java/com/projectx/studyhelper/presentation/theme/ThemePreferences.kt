@@ -48,7 +48,7 @@ data class ThemeConfig(
     val amoledBlack: Boolean = false,
     val useDynamicColor: Boolean = true,
     val colorTheme: AppColorTheme = AppColorTheme.PURPLE,
-    val timerAnimation: TimerAnimationStyle = TimerAnimationStyle.DEFAULT
+    val timerAnimation: TimerAnimationStyle = TimerAnimationStyle.WIGGLY
 )
 
 private val Context.themeDataStore: DataStore<Preferences> by preferencesDataStore(name = "theme_preferences")
@@ -84,7 +84,7 @@ class ThemePreferences(private val context: Context) {
                     putBoolean("amoled_black", false)
                     putBoolean("use_dynamic_color", true)
                     putString("color_theme", AppColorTheme.PURPLE.name)
-                    putString("timer_animation", TimerAnimationStyle.DEFAULT.name)
+                    putString("timer_animation", TimerAnimationStyle.WIGGLY.name)
                     apply()
                 }
                 ThemeConfig(
@@ -92,7 +92,7 @@ class ThemePreferences(private val context: Context) {
                     amoledBlack = false,
                     useDynamicColor = true,
                     colorTheme = AppColorTheme.PURPLE,
-                    timerAnimation = TimerAnimationStyle.DEFAULT
+                    timerAnimation = TimerAnimationStyle.WIGGLY
                 )
             } else {
                 val modeString = prefs.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
@@ -141,7 +141,7 @@ class ThemePreferences(private val context: Context) {
                 amoledBlack = false,
                 useDynamicColor = false,
                 colorTheme = AppColorTheme.PURPLE,
-                timerAnimation = TimerAnimationStyle.DEFAULT
+                timerAnimation = TimerAnimationStyle.WIGGLY
             )
         }
     }
@@ -184,7 +184,7 @@ class ThemePreferences(private val context: Context) {
                 AppColorTheme.PURPLE
             }
 
-            val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.DEFAULT.name
+            val timerAnimString = prefs[Keys.TIMER_ANIMATION] ?: TimerAnimationStyle.WIGGLY.name
             val timerAnimation = try {
                 if (timerAnimString == "PULSING_GLOW" || timerAnimString == "pulsing") {
                     TimerAnimationStyle.GLOW
@@ -192,7 +192,7 @@ class ThemePreferences(private val context: Context) {
                     TimerAnimationStyle.valueOf(timerAnimString)
                 }
             } catch (e: Exception) {
-                TimerAnimationStyle.DEFAULT
+                TimerAnimationStyle.WIGGLY
             }
 
             // Sync to quick cache so subsequent cold starts reflect user settings immediately

@@ -1,25 +1,15 @@
-Studyio v1.4.3 Release Notes
+Studyio v1.4.4 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Motionless Wavy Background Track with Animated Active Loader: Refined the Wiggly Wave animation so the 360° low-opacity background wave circle stays completely stationary and motionless (no spinning or track movement) while only the active focus loader animates with dynamic wave undulation as it fills clockwise.
+• Official Material 3 Expressive CircularWavyProgressIndicator: Upgraded Android Jetpack Compose Material 3 library to support Google's official Material 3 Expressive APIs (`@OptIn(ExperimentalMaterial3ExpressiveApi::class)`). Replaced custom canvas wavy loader with Google's official `CircularWavyProgressIndicator`.
 
-• Google Sans Flex Typography: Full application typography powered by Google Sans Flex variable font across all 15 Material 3 text styles.
+• Google Play Store App Downloading Spinner Behavior: The active traveling wave is bound to the focus session's completion ratio (`progress = { currentProgress }`) via draw-phase lambda execution without causing unnecessary main-thread recompositions. The undulating wave amplitude, wavelength, and frequency mirror the official Google Play Store app downloading spinner.
 
-• First-Launch Theme Governance: Dynamic Theme (with Violet fallback) is applied strictly on the very first launch. On all subsequent launches, Studyio immediately loads and follows the user's custom chosen theme and appearance settings with zero resets or overriding.
+• Theme & AMOLED Compatibility: Seamlessly colored with `MaterialTheme.colorScheme.primary` for the active traveling wave and `MaterialTheme.colorScheme.surfaceContainerHighest` for the underlying motionless track, cleanly enveloping the centered countdown time and label with full AMOLED pitch-black and dynamic theme compatibility.
 
-• Instant Fast-Cache Theme Loading: Synchronized appearance settings with the instant theme cache so the app opens directly into the user's chosen palette from frame 0 with no initial theme flicker.
+• First-Launch & User Settings Preservation: Configured Wiggly Wave as the default timer dial style on launch while honoring user settings and all existing dial options (Classic Circle, Material Segmented, and Glow).
 
-• Nordic Teal Theme Palette: Material 3 Nordic Teal color system (Teal #006A6A, Mint Container #70F7F7, Muted Sage).
-
-• System Default Theme Mode: The theme mode selector defaults to System mode on first launch to follow device settings.
-
-• Up-To-Date Update Dialog: Checking for updates when on the latest release presents a clean native information dialog showing installed version details.
-
-• Persistent Custom Starting Preset: Custom focus countdown durations remain saved and restored across app closures.
-
-• Official App Icon: High-resolution adaptive Studyio launcher icon.
-
-• Minimal Material Single Glow: Subtle single breathing glow aura framing the focus progress arc.
+• Google Sans Flex Variable Typography: Full application typography powered by Google Sans Flex variable font across all 15 Material 3 text styles.
 
 • Retained Stability: Offline crash diagnostics screen remains active on an isolated process.
