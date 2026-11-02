@@ -51,9 +51,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -64,14 +62,12 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -102,7 +98,7 @@ import com.projectx.studyhelper.presentation.theme.HealthRuleBlue
 import com.projectx.studyhelper.presentation.theme.StreakFlameColor
 import com.projectx.studyhelper.presentation.theme.TimerAnimationStyle
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudyScreen(
     uiState: StudyUiState,
@@ -508,11 +504,10 @@ fun StrictTimerDisplayCard(
 /**
  * Renders the chosen Timer Animation Style:
  * 1. DEFAULT: Classic circular progress ring (original).
- * 2. WIGGLY: Google's official Material 3 Expressive CircularWavyProgressIndicator.
+ * 2. WIGGLY: Sinusoidal oscillating wave progress running smoothly along the arc (v1.4.1).
  * 3. SEGMENTED: 60 precision radial tick marks with major 5-minute ticks and pulsing leading edge.
  * 4. GLOW: Radiant single ring with glowing neon effect.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimerProgressDial(
     progress: Float,
@@ -541,38 +536,61 @@ fun TimerProgressDial(
         }
 
         TimerAnimationStyle.WIGGLY -> {
-            val strokePx = with(LocalDensity.current) { 8.dp.toPx() }
-            val dialStroke = remember(strokePx) { Stroke(width = strokePx, cap = StrokeCap.Round) }
-            val dialWavelength = 24.dp
+            val infiniteTransition = rememberInfiniteTransition(label = "WigglyTransition")
+            val wavePhase by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = (2 * PI).toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1900, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "WavePhase"
+            )
 
-            Box(modifier = modifier, contentAlignment = Alignment.Center) {
-                // 1. Motionless 360° wavy track: visible before timer starts and throughout the session
-                CircularWavyProgressIndicator(
-                    progress = { 1f },
-                    modifier = Modifier.fillMaxSize(),
-                    color = trackColor,
-                    trackColor = Color.Transparent,
-                    stroke = dialStroke,
-                    trackStroke = dialStroke,
-                    gapSize = 0.dp,
-                    amplitude = { 1f },
-                    wavelength = dialWavelength,
-                    waveSpeed = 0.dp
-                )
+            Canvas(modifier = modifier) {
+                val strokePx = 10.dp.toPx()
+                val radius = (size.minDimension / 2f) - (strokePx / 2f) - 6.dp.toPx()
+                val centerOffset = Offset(size.width / 2f, size.height / 2f)
 
-                // 2. Active traveling animated wave loader: fills dynamically with tight undulating waves
-                CircularWavyProgressIndicator(
-                    progress = { if (status == TimerStatus.Completed) 1f else progress.coerceIn(0f, 1f) },
-                    modifier = Modifier.fillMaxSize(),
-                    color = primaryColor,
-                    trackColor = Color.Transparent,
-                    stroke = dialStroke,
-                    trackStroke = dialStroke,
-                    gapSize = 0.dp,
-                    amplitude = { 1f },
-                    wavelength = dialWavelength,
-                    waveSpeed = dialWavelength
-                )
+                // NO BACKGROUND CIRCLE DRAWN (as requested)
+
+                val isIdle = status == TimerStatus.Idle && progress <= 0.005f
+                val sweepAngle = if (isIdle) 360f else (progress * 360f).coerceIn(0f, 360f)
+
+                if (sweepAngle > 0.5f) {
+                    val steps = (sweepAngle * 2.5f).toInt().coerceAtLeast(24)
+                    val waveFreq = 14f // Natural wave frequency around circle
+                    val amplitude = if (isRunning) 6.dp.toPx() else 3.5.dp.toPx()
+                    val path = Path()
+
+                    for (i in 0..steps) {
+                        val fraction = i.toFloat() / steps
+                        val angleDeg = -90f + fraction * sweepAngle
+                        val angleRad = Math.toRadians(angleDeg.toDouble())
+
+                        val wave = sin((fraction * (sweepAngle / 360f) * waveFreq * 2 * PI) + if (isRunning) wavePhase else 0f).toFloat()
+                        val r = radius + wave * amplitude
+                        val x = centerOffset.x + (r * cos(angleRad)).toFloat()
+                        val y = centerOffset.y + (r * sin(angleRad)).toFloat()
+
+                        if (i == 0) {
+                            path.moveTo(x, y)
+                        } else {
+                            path.lineTo(x, y)
+                        }
+                    }
+
+                    val waveColor = if (isIdle) primaryColor.copy(alpha = 0.35f) else primaryColor
+                    drawPath(
+                        path = path,
+                        color = waveColor,
+                        style = Stroke(
+                            width = strokePx,
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
+                    )
+                }
             }
         }
 
