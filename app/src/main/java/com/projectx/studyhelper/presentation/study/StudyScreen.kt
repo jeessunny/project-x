@@ -541,18 +541,39 @@ fun TimerProgressDial(
         }
 
         TimerAnimationStyle.WIGGLY -> {
-            val strokePx = with(LocalDensity.current) { 10.dp.toPx() }
+            val strokePx = with(LocalDensity.current) { 8.dp.toPx() }
             val dialStroke = remember(strokePx) { Stroke(width = strokePx, cap = StrokeCap.Round) }
+            val dialWavelength = 24.dp
 
-            CircularWavyProgressIndicator(
-                progress = { if (status == TimerStatus.Completed) 1f else progress.coerceIn(0f, 1f) },
-                modifier = modifier,
-                color = primaryColor,
-                trackColor = trackColor,
-                stroke = dialStroke,
-                trackStroke = dialStroke,
-                gapSize = 0.dp
-            )
+            Box(modifier = modifier, contentAlignment = Alignment.Center) {
+                // 1. Motionless 360° wavy track: visible before timer starts and throughout the session
+                CircularWavyProgressIndicator(
+                    progress = { 1f },
+                    modifier = Modifier.fillMaxSize(),
+                    color = trackColor,
+                    trackColor = Color.Transparent,
+                    stroke = dialStroke,
+                    trackStroke = dialStroke,
+                    gapSize = 0.dp,
+                    amplitude = { 1f },
+                    wavelength = dialWavelength,
+                    waveSpeed = 0.dp
+                )
+
+                // 2. Active traveling animated wave loader: fills dynamically with tight undulating waves
+                CircularWavyProgressIndicator(
+                    progress = { if (status == TimerStatus.Completed) 1f else progress.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxSize(),
+                    color = primaryColor,
+                    trackColor = Color.Transparent,
+                    stroke = dialStroke,
+                    trackStroke = dialStroke,
+                    gapSize = 0.dp,
+                    amplitude = { 1f },
+                    wavelength = dialWavelength,
+                    waveSpeed = dialWavelength
+                )
+            }
         }
 
         TimerAnimationStyle.SEGMENTED -> {

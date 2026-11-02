@@ -1,15 +1,13 @@
-Studyio v1.4.4 Release Notes
+Studyio v1.4.5 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Official Material 3 Expressive CircularWavyProgressIndicator: Upgraded Android Jetpack Compose Material 3 library to support Google's official Material 3 Expressive APIs (`@OptIn(ExperimentalMaterial3ExpressiveApi::class)`). Replaced custom canvas wavy loader with Google's official `CircularWavyProgressIndicator`.
+• Immediate Full-Amplitude Waves: Configured `amplitude = { 1f }` to completely eliminate the default 10% progress threshold where the indicator was previously flat. Waves are now active, distinct, and undulating immediately from the very first moment.
 
-• Google Play Store App Downloading Spinner Behavior: The active traveling wave is bound to the focus session's completion ratio (`progress = { currentProgress }`) via draw-phase lambda execution without causing unnecessary main-thread recompositions. The undulating wave amplitude, wavelength, and frequency mirror the official Google Play Store app downloading spinner.
+• Tight, Defined Wavy Geometry: Optimized wave wavelength to `24.dp` and stroke to `8.dp`, creating 26 tight, well-defined, energetic wave cycles around the dial instead of loose or blurred ripples.
 
-• Theme & AMOLED Compatibility: Seamlessly colored with `MaterialTheme.colorScheme.primary` for the active traveling wave and `MaterialTheme.colorScheme.surfaceContainerHighest` for the underlying motionless track, cleanly enveloping the centered countdown time and label with full AMOLED pitch-black and dynamic theme compatibility.
+• Persistent Motionless Wavy Background Track: Layered a stationary 360° wavy track (`waveSpeed = 0.dp`) in `trackColor` beneath the active traveling loader. The wavy circle is now prominently visible before the timer starts and serves as the continuous track during the session.
 
-• First-Launch & User Settings Preservation: Configured Wiggly Wave as the default timer dial style on launch while honoring user settings and all existing dial options (Classic Circle, Material Segmented, and Glow).
+• Google Play Store Undulating Active Loader: Active traveling wave advances clockwise with dynamic wave undulation (`waveSpeed = wavelength`) in `primaryColor` over the motionless background track.
 
-• Google Sans Flex Variable Typography: Full application typography powered by Google Sans Flex variable font across all 15 Material 3 text styles.
-
-• Retained Stability: Offline crash diagnostics screen remains active on an isolated process.
+• AMOLED Pitch-Black & Dynamic Theming: Retains 100% compatibility with Material You dynamic color, custom themes, and pitch-black dark mode without unnecessary main-thread recompositions.
