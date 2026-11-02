@@ -1,8 +1,8 @@
-Studyio v1.4.2 Release Notes
+Studyio v1.4.3 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Material Expressive Wavy Animation: Redesigned the Wiggly Wave animation to match Google Play Store & Material Design 3 Expressive guidelines. Before the timer starts, a calm, full wave-like circle rests in subtle low opacity. When the timer runs, the entire wave line animates with dynamic wave undulation while the active progress fills clockwise in solid primary color, keeping the low-opacity wavy leading line ahead of the timer until 100% completion.
+• Motionless Wavy Background Track with Animated Active Loader: Refined the Wiggly Wave animation so the 360° low-opacity background wave circle stays completely stationary and motionless (no spinning or track movement) while only the active focus loader animates with dynamic wave undulation as it fills clockwise.
 
 • Google Sans Flex Typography: Full application typography powered by Google Sans Flex variable font across all 15 Material 3 text styles.
 

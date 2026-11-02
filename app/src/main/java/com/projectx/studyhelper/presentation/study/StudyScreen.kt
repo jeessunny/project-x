@@ -559,9 +559,8 @@ fun TimerProgressDial(
                 val centerOffset = Offset(size.width / 2f, size.height / 2f)
                 val waveFreq = 14f // Integer cycle count ensuring seamless 360° circular closure
                 val amplitude = amplitudeDp.toPx()
-                val phase = if (isRunning) wavePhase else 0f
 
-                // 1. Full 360° wavy track: still wave-like circle when idle, animated leading line when timer runs
+                // 1. Full 360° wavy track: stays completely MOTIONLESS at all times (no spin/undulation)
                 val trackSteps = 720
                 val trackPath = Path()
                 for (i in 0..trackSteps) {
@@ -569,7 +568,8 @@ fun TimerProgressDial(
                     val angleDeg = -90f + fraction * 360f
                     val angleRad = Math.toRadians(angleDeg.toDouble())
 
-                    val wave = sin(fraction * waveFreq * 2 * PI - phase).toFloat()
+                    // Stationary, motionless wave baseline (phase = 0)
+                    val wave = sin(fraction * waveFreq * 2 * PI).toFloat()
                     val r = radius + wave * amplitude
                     val x = centerOffset.x + (r * cos(angleRad)).toFloat()
                     val y = centerOffset.y + (r * sin(angleRad)).toFloat()
@@ -593,18 +593,20 @@ fun TimerProgressDial(
                     )
                 )
 
-                // 2. Active progress wave line: animates and advances clockwise along the exact same wave path
+                // 2. Active loader wave line: animates with wave motion and advances clockwise
                 val sweepAngle = if (status == TimerStatus.Completed) 360f else (progress * 360f).coerceIn(0f, 360f)
                 if (sweepAngle > 0.5f) {
                     val activeSteps = (sweepAngle * 2.5f).toInt().coerceAtLeast(12)
                     val activePath = Path()
+                    val loaderPhase = if (isRunning) wavePhase else 0f
 
                     for (i in 0..activeSteps) {
                         val fraction = (i.toFloat() / activeSteps) * (sweepAngle / 360f)
                         val angleDeg = -90f + fraction * 360f
                         val angleRad = Math.toRadians(angleDeg.toDouble())
 
-                        val wave = sin(fraction * waveFreq * 2 * PI - phase).toFloat()
+                        // Active loader animates with loaderPhase
+                        val wave = sin(fraction * waveFreq * 2 * PI - loaderPhase).toFloat()
                         val r = radius + wave * amplitude
                         val x = centerOffset.x + (r * cos(angleRad)).toFloat()
                         val y = centerOffset.y + (r * sin(angleRad)).toFloat()
