@@ -71,6 +71,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -540,49 +541,84 @@ fun TimerProgressDial(
                 initialValue = 0f,
                 targetValue = (2 * PI).toFloat(),
                 animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 1900, easing = LinearEasing),
+                    animation = tween(durationMillis = 1800, easing = LinearEasing),
                     repeatMode = RepeatMode.Restart
                 ),
                 label = "WavePhase"
+            )
+
+            val amplitudeDp by animateDpAsState(
+                targetValue = if (isRunning) 5.5.dp else 4.dp,
+                animationSpec = tween(600),
+                label = "WaveAmplitude"
             )
 
             Canvas(modifier = modifier) {
                 val strokePx = 10.dp.toPx()
                 val radius = (size.minDimension / 2f) - (strokePx / 2f) - 6.dp.toPx()
                 val centerOffset = Offset(size.width / 2f, size.height / 2f)
+                val waveFreq = 14f // Integer cycle count ensuring seamless 360° circular closure
+                val amplitude = amplitudeDp.toPx()
+                val phase = if (isRunning) wavePhase else 0f
 
-                // NO BACKGROUND CIRCLE DRAWN (as requested)
+                // 1. Full 360° wavy track: still wave-like circle when idle, animated leading line when timer runs
+                val trackSteps = 720
+                val trackPath = Path()
+                for (i in 0..trackSteps) {
+                    val fraction = i.toFloat() / trackSteps
+                    val angleDeg = -90f + fraction * 360f
+                    val angleRad = Math.toRadians(angleDeg.toDouble())
 
-                val isIdle = status == TimerStatus.Idle && progress <= 0.005f
-                val sweepAngle = if (isIdle) 360f else (progress * 360f).coerceIn(0f, 360f)
+                    val wave = sin(fraction * waveFreq * 2 * PI - phase).toFloat()
+                    val r = radius + wave * amplitude
+                    val x = centerOffset.x + (r * cos(angleRad)).toFloat()
+                    val y = centerOffset.y + (r * sin(angleRad)).toFloat()
 
+                    if (i == 0) {
+                        trackPath.moveTo(x, y)
+                    } else {
+                        trackPath.lineTo(x, y)
+                    }
+                }
+                trackPath.close()
+
+                val trackWaveColor = primaryColor.copy(alpha = 0.28f)
+                drawPath(
+                    path = trackPath,
+                    color = trackWaveColor,
+                    style = Stroke(
+                        width = strokePx,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
+                )
+
+                // 2. Active progress wave line: animates and advances clockwise along the exact same wave path
+                val sweepAngle = if (status == TimerStatus.Completed) 360f else (progress * 360f).coerceIn(0f, 360f)
                 if (sweepAngle > 0.5f) {
-                    val steps = (sweepAngle * 2.5f).toInt().coerceAtLeast(24)
-                    val waveFreq = 14f // Natural wave frequency around circle
-                    val amplitude = if (isRunning) 6.dp.toPx() else 3.5.dp.toPx()
-                    val path = Path()
+                    val activeSteps = (sweepAngle * 2.5f).toInt().coerceAtLeast(12)
+                    val activePath = Path()
 
-                    for (i in 0..steps) {
-                        val fraction = i.toFloat() / steps
-                        val angleDeg = -90f + fraction * sweepAngle
+                    for (i in 0..activeSteps) {
+                        val fraction = (i.toFloat() / activeSteps) * (sweepAngle / 360f)
+                        val angleDeg = -90f + fraction * 360f
                         val angleRad = Math.toRadians(angleDeg.toDouble())
 
-                        val wave = sin((fraction * (sweepAngle / 360f) * waveFreq * 2 * PI) + if (isRunning) wavePhase else 0f).toFloat()
+                        val wave = sin(fraction * waveFreq * 2 * PI - phase).toFloat()
                         val r = radius + wave * amplitude
                         val x = centerOffset.x + (r * cos(angleRad)).toFloat()
                         val y = centerOffset.y + (r * sin(angleRad)).toFloat()
 
                         if (i == 0) {
-                            path.moveTo(x, y)
+                            activePath.moveTo(x, y)
                         } else {
-                            path.lineTo(x, y)
+                            activePath.lineTo(x, y)
                         }
                     }
 
-                    val waveColor = if (isIdle) primaryColor.copy(alpha = 0.35f) else primaryColor
                     drawPath(
-                        path = path,
-                        color = waveColor,
+                        path = activePath,
+                        color = primaryColor,
                         style = Stroke(
                             width = strokePx,
                             cap = StrokeCap.Round,

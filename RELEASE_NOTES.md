@@ -1,12 +1,14 @@
-Studyio v1.4.1 Release Notes
+Studyio v1.4.2 Release Notes
 
 Key Improvements & Fixes in this Release:
 
-• Google Sans Flex Typography: Completely transitioned the application typography across all 15 Material 3 text styles to Google Sans Flex. Features variable font weights (Light, Regular, Medium, SemiBold, Bold, ExtraBold) for sharp, modern Google styling across timers, headers, cards, dialogs, and controls.
+• Material Expressive Wavy Animation: Redesigned the Wiggly Wave animation to match Google Play Store & Material Design 3 Expressive guidelines. Before the timer starts, a calm, full wave-like circle rests in subtle low opacity. When the timer runs, the entire wave line animates with dynamic wave undulation while the active progress fills clockwise in solid primary color, keeping the low-opacity wavy leading line ahead of the timer until 100% completion.
+
+• Google Sans Flex Typography: Full application typography powered by Google Sans Flex variable font across all 15 Material 3 text styles.
 
 • First-Launch Theme Governance: Dynamic Theme (with Violet fallback) is applied strictly on the very first launch. On all subsequent launches, Studyio immediately loads and follows the user's custom chosen theme and appearance settings with zero resets or overriding.
 
-• Instant Fast-Cache Theme Loading: Synchronized all appearance settings with the instant theme cache so the app opens directly into the user's chosen palette from frame 0 with no initial theme flicker.
+• Instant Fast-Cache Theme Loading: Synchronized appearance settings with the instant theme cache so the app opens directly into the user's chosen palette from frame 0 with no initial theme flicker.
 
 • Nordic Teal Theme Palette: Material 3 Nordic Teal color system (Teal #006A6A, Mint Container #70F7F7, Muted Sage).
 
